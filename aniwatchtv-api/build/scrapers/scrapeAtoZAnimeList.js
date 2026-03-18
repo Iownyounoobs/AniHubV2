@@ -50,7 +50,7 @@ const axios_1 = __importStar(require("axios"));
 const cheerio_1 = require("cheerio");
 const http_errors_1 = __importDefault(require("http-errors"));
 const aniwatchtvRoutes_1 = require("../utils/aniwatchtvRoutes");
-const headers_1 = require("../config/headers");
+const headers_1 = require("../config/headers"); // ✅ fixed import
 const extractors_1 = require("../extractors");
 /**
  * Scrapes anime list from the A-Z page for a given pagination.
@@ -61,16 +61,12 @@ const scrapeAtoZAnimeList = (page) => __awaiter(void 0, void 0, void 0, function
         const { BASE } = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
         const pageUrl = new URL(`az-list/?page=${page}`, BASE).toString();
         const response = yield axios_1.default.get(pageUrl, {
-            headers: {
-                "User-Agent": headers_1.headers.USER_AGENT_HEADER,
-                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODING_HEADER,
-                Accept: headers_1.headers.ACCEPT_HEADER,
-            },
+            headers: headers_1.headers,
         });
         const $ = (0, cheerio_1.load)(response.data);
         const selector = ".film_list-wrap .flw-item";
-        console.log("✅ Elements matched:", $(selector).length);
-        console.log("🧾 HTML preview:", response.data.slice(0, 500)); // optional
+        console.log("Elements matched:", $(selector).length);
+        console.log("HTML preview:", response.data.slice(0, 500)); // optional
         return (0, extractors_1.extractAtoZAnimes)($, selector);
     }
     catch (err) {

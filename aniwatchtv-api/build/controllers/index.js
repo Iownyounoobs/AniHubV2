@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAtoZAnimeList = exports.getEpisodeStreamingSourceInfo = exports.getEpisodeServersInfo = exports.getEpisodesInfo = exports.getCategoryPageInfo = exports.getSearchPageInfo = exports.getAnimeDetails = exports.getHomePageInfo = void 0;
+exports.getLatestEpisodes = exports.getAtoZAnimeList = exports.getEpisodeStreamingSourceInfo = exports.getEpisodeServersInfo = exports.getEpisodesInfo = exports.getCategoryPageInfo = exports.getSearchPageInfo = exports.getAnimeDetails = exports.getHomePageInfo = void 0;
 const getHomePage_1 = require("./getHomePage");
 Object.defineProperty(exports, "getHomePageInfo", { enumerable: true, get: function () { return getHomePage_1.getHomePageInfo; } });
 const getAnimeDetails_1 = require("./getAnimeDetails");
@@ -17,3 +17,5 @@ const getEpisodeStreamingSource_1 = require("./getEpisodeStreamingSource");
 Object.defineProperty(exports, "getEpisodeStreamingSourceInfo", { enumerable: true, get: function () { return getEpisodeStreamingSource_1.getEpisodeStreamingSourceInfo; } });
 const getAtoZAnimeList_1 = require("./getAtoZAnimeList");
 Object.defineProperty(exports, "getAtoZAnimeList", { enumerable: true, get: function () { return getAtoZAnimeList_1.getAtoZAnimeList; } });
+const getLatestEpisodes_1 = require("./getLatestEpisodes");
+Object.defineProperty(exports, "getLatestEpisodes", { enumerable: true, get: function () { return getLatestEpisodes_1.getLatestEpisodes; } });

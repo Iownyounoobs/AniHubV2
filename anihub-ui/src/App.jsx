@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import ChangeAccount from "./pages/ChangeAccount";
 import Subscribe from "./pages/Subscribe";
 import Subscribed from "./pages/Subscribed";
+import Genre from "./pages/Genre";
 
 // Route Guards
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -129,6 +130,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AnimeDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/genre/:genre"
+          element={
+            <ProtectedRoute>
+              <Genre />
             </ProtectedRoute>
           }
         />

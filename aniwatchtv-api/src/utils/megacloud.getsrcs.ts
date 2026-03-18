@@ -8,7 +8,7 @@ import { BASE_URL as DEFAULT_ANIWATCHTV_URL } from "./aniwatchtvRoutes";
 import { headers } from "../config/headers";
 import type { apiFormat, unencrypSources } from "./megacloud";
 
-const embed_url = "https://megacloud.tv/embed-2/e-1/";
+const embed_url = "https://megacloud.blog/embed-2/e-1/";
 const referrer = DEFAULT_ANIWATCHTV_URL;
 const user_agent = headers.USER_AGENT_HEADER;
 

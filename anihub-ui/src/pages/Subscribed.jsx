@@ -1,133 +1,159 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import styled from "styled-components";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-
 export default function Subscribed() {
-  const navigate = useNavigate(); 
-  const [searchParams] = useSearchParams(); // To extract URL query parameters
-  const plan = searchParams.get("plan") || "monthly"; // Get plan type (monthly/yearly)
-  const [loading, setLoading] = useState(true); 
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const plan = searchParams.get("plan") || "monthly";
+  const [loading, setLoading] = useState(true);
 
-  //  runs once on mount to update user status in backend
   useEffect(() => {
     const auth = getAuth();
-
-    // Watch for user login status
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        console.warn("User not logged in after Stripe redirect");
-        setLoading(false);
-        return;
-      }
-
+      if (!user) { setLoading(false); return; }
       try {
-        // Get a secure token to prove identity
         const token = await user.getIdToken();
-
-        // POST request to backend to mark the user as premium in Firestore
-        const res = await axios.post(
+        await axios.post(
           "http://localhost:3002/mark-premium",
-          { uid: user.uid, plan }, // Include plan type and user ID
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // Pass Firebase token in header
-            },
-          }
+          { uid: user.uid, plan },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log("Premium status saved:", res.status);
       } catch (err) {
         console.error("Failed to mark user as premium:", err.response?.data || err.message);
       }
-
-      // After marking is done (or failed), stop loading state
       setLoading(false);
     });
-
-    // Cleanup listener on unmount
     return () => unsubscribe();
   }, [plan]);
 
-  // While account is being marked as premium, show loading UI
   if (loading) {
     return (
-      <>
+      <div style={s.page}>
+        <div style={s.gridOverlay} />
+        <div style={s.scanlines} />
         <Navbar />
-        <Container>
-          <p style={{ color: "#fff", fontSize: "1.2rem" }}>
-            Marking your account as Premium...
-          </p>
-        </Container>
-      </>
+        <div style={s.centered}>
+          <div style={s.spinner} />
+          <p style={s.loadingText}>ACTIVATING PREMIUM...</p>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
     );
   }
 
-  // Once done, show success confirmation UI
   return (
-    <>
+    <div style={s.page}>
+      <div style={s.gridOverlay} />
+      <div style={s.scanlines} />
       <Navbar />
-      <Container>
-        <Card>
-          <h1>Welcome to AniHub Premium!</h1>
-          <p>
-            You now have full access to exclusive episodes, high-quality
-            streams, and all premium perks.
+
+      <div style={s.centered}>
+        <div style={s.card}>
+          <div style={s.iconRow}>
+            <div style={s.crownIcon}>◈</div>
+          </div>
+          <h1 style={s.title}>PREMIUM ACTIVATED</h1>
+          <div style={s.titleGlow} />
+          <p style={s.subtitle}>
+            Welcome to AniHub Premium. You now have full access to exclusive episodes,
+            high-quality streams, and all premium perks.
           </p>
-          <Button onClick={() => navigate("/home")}>Go to Home</Button>
-        </Card>
-      </Container>
-    </>
+          <div style={s.planBadge}>
+            <span style={s.planLabel}>PLAN</span>
+            <span style={s.planValue}>{plan.toUpperCase()}</span>
+          </div>
+          <button
+            style={s.homeBtn}
+            onClick={() => navigate("/home")}
+            onMouseEnter={e => Object.assign(e.currentTarget.style, s.homeBtnHover)}
+            onMouseLeave={e => Object.assign(e.currentTarget.style, s.homeBtn)}
+          >
+            ENTER ANIHUB ▶▶
+          </button>
+        </div>
+      </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
   );
 }
 
-const Container = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 90vh;
-  background-color: #0d0d0d;
-  padding: 2rem;
-`;
-
-// shows the welcome message
-const Card = styled.div`
-  background: linear-gradient(135deg, #1f1f1f, #2d2d2d);
-  color: #ffffff;
-  padding: 3rem 4rem;
-  border-radius: 1rem;
-  box-shadow: 0 0 25px rgb(150, 59, 236);
-  text-align: center;
-  max-width: 600px;
-
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: rgb(150, 59, 236);
-  }
-
-  p {
-    margin: 0.75rem 0;
-    line-height: 1.6;
-  }
-`;
-
-//  button with hover and transition effect
-const Button = styled.button`
-  margin-top: 2rem;
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
-  color: white;
-  background: rgb(150, 59, 236);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s ease;
-
-  &:hover {
-    background: rgb(150, 59, 236);
-    transform: scale(1.05);
-  }
-`;
+const s = {
+  page: {
+    background: "radial-gradient(ellipse at 15% 35%, rgba(88,80,220,0.15) 0%, transparent 55%), radial-gradient(ellipse at 85% 15%, rgba(56,189,248,0.08) 0%, transparent 45%), radial-gradient(ellipse at 55% 85%, rgba(192,132,252,0.1) 0%, transparent 50%), #07071a", minHeight: "100vh",
+    position: "relative", overflowX: "hidden",
+    fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+    display: "flex", flexDirection: "column",
+  },
+  gridOverlay: {
+    position: "fixed", inset: 0,
+    backgroundImage: `linear-gradient(rgba(88,80,220,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(88,80,220,0.05) 1px, transparent 1px)`,
+    backgroundSize: "40px 40px", pointerEvents: "none", zIndex: 0,
+  },
+  scanlines: {
+    position: "fixed", inset: 0,
+    background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px)",
+    pointerEvents: "none", zIndex: 1,
+  },
+  centered: {
+    position: "relative", zIndex: 2, flex: 1,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    padding: "2rem",
+  },
+  card: {
+    maxWidth: 520, width: "100%", textAlign: "center",
+    background: "rgba(251,191,36,0.02)",
+    border: "1px solid rgba(251,191,36,0.2)",
+    boxShadow: "0 0 60px rgba(251,191,36,0.04)",
+    padding: "3rem 2.5rem",
+  },
+  iconRow: { marginBottom: "1.5rem" },
+  crownIcon: { fontSize: "2.5rem", color: "#fbbf24", textShadow: "0 0 30px #fbbf24, 0 0 60px #fbbf2455" },
+  title: {
+    fontSize: "clamp(1.2rem, 4vw, 1.8rem)", fontWeight: 900,
+    color: "#fbbf24", letterSpacing: "0.15em", margin: "0 0 0.75rem",
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
+    textShadow: "0 0 30px #fbbf24, 0 0 60px #fbbf2455",
+  },
+  titleGlow: {
+    width: 80, height: 2, margin: "0 auto 1.5rem",
+    background: "linear-gradient(to right, transparent, #fbbf24, transparent)",
+  },
+  subtitle: { color: "#666", fontSize: "0.82rem", lineHeight: 1.7, letterSpacing: "0.06em", marginBottom: "2rem" },
+  planBadge: {
+    display: "inline-flex", alignItems: "center", gap: "0.75rem",
+    background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)",
+    padding: "0.5rem 1.25rem", marginBottom: "2rem",
+  },
+  planLabel: { color: "#444", fontSize: "0.6rem", letterSpacing: "0.3em" },
+  planValue: { color: "#fbbf24", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em" },
+  homeBtn: {
+    background: "rgba(251,191,36,0.08)", color: "#fbbf24",
+    border: "1px solid rgba(251,191,36,0.5)",
+    padding: "0.8rem 2.5rem",
+    fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.25em",
+    cursor: "pointer", transition: "all 0.2s",
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
+    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+  },
+  homeBtnHover: {
+    background: "#fbbf24", color: "#000",
+    border: "1px solid #fbbf24",
+    boxShadow: "0 0 30px rgba(251,191,36,0.4)",
+    padding: "0.8rem 2.5rem",
+    fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.25em",
+    cursor: "pointer", transition: "all 0.2s",
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
+    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+  },
+  spinner: {
+    width: 36, height: 36,
+    border: "2px solid rgba(251,191,36,0.15)",
+    borderTopColor: "#fbbf24", borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
+  },
+  loadingText: { color: "#444", fontSize: "0.75rem", letterSpacing: "0.3em", margin: 0 },
+};

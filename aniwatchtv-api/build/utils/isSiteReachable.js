@@ -19,7 +19,7 @@ const isSiteReachable = (url) => __awaiter(void 0, void 0, void 0, function* () 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
         const response = yield fetch(url, {
-            method: "HEAD",
+            method: "GET",
             signal: controller.signal,
         });
         clearTimeout(timeout);

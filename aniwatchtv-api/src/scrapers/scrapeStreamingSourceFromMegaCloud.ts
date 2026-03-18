@@ -5,6 +5,7 @@ import { load, type CheerioAPI } from "cheerio";
 import createHttpError, { type HttpError } from "http-errors";
 import { extractServerId } from "../extractors";
 import MegaCloud from "../utils/megacloud";
+import { extractM3U8WithPuppeteer } from "../utils/puppeteerExtractor";
 import { type ScrapedAnimeEpisodesSources } from "../types/animeTypes";
 
 export const scrapeStreamingSourceFromMegaCloud = async (
@@ -53,8 +54,34 @@ export const scrapeStreamingSourceFromMegaCloud = async (
 
     console.log("Streaming Link:", streamingUrl);
 
-    // Use MegaCloud on the resolved link
-    return await new MegaCloud().extract2(new URL(streamingUrl));
+    // Try axios-based extraction first, then WASM, then Puppeteer interception
+    let extracted: any = { sources: [], subtitles: [] };
+    let needsPuppeteer = false;
+
+    try {
+      extracted = await new MegaCloud().extract(new URL(streamingUrl));
+      if (!extracted?.sources?.length) needsPuppeteer = true;
+    } catch (extractErr) {
+      console.warn("MegaCloud extract failed, trying extract2:", (extractErr as any)?.message);
+      needsPuppeteer = true;
+    }
+
+    if (needsPuppeteer) {
+      needsPuppeteer = false;
+      try {
+        extracted = await new MegaCloud().extract2(new URL(streamingUrl));
+        if (!extracted?.sources?.length) needsPuppeteer = true;
+      } catch (megaErr) {
+        console.warn("MegaCloud extract2 threw:", (megaErr as any)?.message);
+        needsPuppeteer = true;
+      }
+    }
+
+    if (needsPuppeteer) {
+      console.log("Both MegaCloud methods failed — returning embedUrl fallback");
+    }
+
+    return { ...extracted, embedUrl: streamingUrl };
   } catch (err: any) {
     console.error("Error in scrapeStreamingSourceFromMegaCloud:", err);
 

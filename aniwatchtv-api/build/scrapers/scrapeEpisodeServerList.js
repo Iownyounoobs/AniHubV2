@@ -52,7 +52,7 @@ const axios_1 = __importStar(require("axios"));
 const http_errors_1 = __importDefault(require("http-errors"));
 const cheerio_1 = require("cheerio");
 const scrapeEpisodeServerList = (episodeUrl) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     const result = {
         episodeId: episodeUrl,
         episodeNo: 0,
@@ -61,29 +61,33 @@ const scrapeEpisodeServerList = (episodeUrl) => __awaiter(void 0, void 0, void 0
         raw: [],
     };
     try {
-        const episodeId = episodeUrl.split("?ep=")[1];
-        const aniwatchUrls = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
-        const { data } = yield axios_1.default.get(`${aniwatchUrls.AJAX}/v2/episode/servers?episodeId=${episodeId}`, {
-            headers: {
-                "User-Agent": headers_1.headers.USER_AGENT_HEADER,
-                "X-Requested-With": "XMLHttpRequest",
-                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODING_HEADER,
-                Accept: headers_1.headers.ACCEPT_HEADER,
-                Referer: new URL(`/watch/${episodeUrl}`, aniwatchUrls.BASE).href,
-            },
+        const [animeId, query] = episodeUrl.split("?");
+        const searchParams = new URLSearchParams(query);
+        const episodeId = searchParams.get("ep");
+        if (!episodeId) {
+            throw http_errors_1.default.BadRequest("Missing 'ep' parameter");
+        }
+        const { BASE, AJAX } = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
+        const targetUrl = `${AJAX}/v2/episode/servers?episodeId=${episodeId}`;
+        const response = yield axios_1.default.get(targetUrl, {
+            headers: Object.assign(Object.assign({}, headers_1.headers), { "X-Requested-With": "XMLHttpRequest", Referer: `${BASE}/watch/${animeId}?ep=${episodeId}` }),
         });
-        const $ = (0, cheerio_1.load)(data.html);
-        // Extract episode number
+        if (!((_a = response.data) === null || _a === void 0 ? void 0 : _a.html) || typeof response.data.html !== "string") {
+            throw (0, http_errors_1.default)(500, "Invalid response: expected HTML string");
+        }
+        const $ = (0, cheerio_1.load)(response.data.html);
         const episodeNumberSelector = ".server-notice strong";
-        result.episodeNo = Number($(episodeNumberSelector).text().split(" ").pop()) || 0;
-        // Extract server lists
-        const extractServers = (selector) => $(selector).map((_, el) => {
+        const epText = $(episodeNumberSelector).text().trim();
+        result.episodeNo = Number(epText.split(" ").pop()) || 0;
+        const extractServers = (selector) => $(selector)
+            .map((_i, el) => {
             var _a;
             return ({
                 serverName: $(el).find("a").text().toLowerCase().trim(),
                 serverId: Number((_a = $(el).attr("data-server-id")) === null || _a === void 0 ? void 0 : _a.trim()) || null,
             });
-        }).get();
+        })
+            .get();
         result.sub = extractServers(".servers-sub .ps__-list .server-item");
         result.dub = extractServers(".servers-dub .ps__-list .server-item");
         result.raw = extractServers(".servers-raw .ps__-list .server-item");
@@ -92,9 +96,9 @@ const scrapeEpisodeServerList = (episodeUrl) => __awaiter(void 0, void 0, void 0
     catch (err) {
         console.error("Error in scrapeEpisodeServerList:", err);
         if (err instanceof axios_1.AxiosError) {
-            throw (0, http_errors_1.default)(((_a = err.response) === null || _a === void 0 ? void 0 : _a.status) || 500, ((_b = err.response) === null || _b === void 0 ? void 0 : _b.statusText) || "Something went wrong");
+            throw (0, http_errors_1.default)(((_b = err.response) === null || _b === void 0 ? void 0 : _b.status) || 500, ((_c = err.response) === null || _c === void 0 ? void 0 : _c.statusText) || "Something went wrong");
         }
-        throw http_errors_1.default.InternalServerError("Internal server error");
+        throw http_errors_1.default.InternalServerError("Internal server error while scraping episode servers");
     }
 });
 exports.scrapeEpisodeServerList = scrapeEpisodeServerList;

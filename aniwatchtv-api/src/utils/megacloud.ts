@@ -1,11 +1,12 @@
 import crypto from "crypto";
+import https from "https";
 import { IVideo, ISubtitle, Intro } from "../types/animeTypes";
 import VideoExtractor from "./video-extractors";
 import { getSources } from "./megacloud.getsrcs";
 
 const megacloud = {
-  script: "https://megacloud.tv/js/player/a/prod/e1-player.min.js?v=",
-  sources: "https://megacloud.tv/embed-2/ajax/e-1/getSources?id=",
+  script: "https://megacloud.blog/js/player/a/prod/e1-player.min.js?v=",
+  sources: "https://megacloud.blog/embed-2/ajax/v3/e-1/getSources?id=",
 } as const;
 
 type tracks = {
@@ -36,6 +37,11 @@ type ExtractedData = Pick<apiFormat, "intro" | "outro" | "tracks"> & {
 class MegaCloud extends VideoExtractor {
   protected override serverName = "MegaCloud";
   protected override sources: IVideo[] = [];
+
+  constructor() {
+    super();
+    this.client.defaults.httpsAgent = new https.Agent({ rejectUnauthorized: false });
+  }
 
   async extract(videoUrl: URL) {
     try {

@@ -1,258 +1,266 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-
-import AuthBackground from "../components/AuthBackground"; 
-import Header from '../components/Header'; 
-
-// Firebase auth and Firestore setup
-import { firebaseAuth } from '../utils/firebase-config';
-import { createUserWithEmailAndPassword } from 'firebase/auth'; 
-import { doc, setDoc } from "firebase/firestore"; 
-import { firestore } from "../utils/firebase-config";
-
-import { useNavigate } from 'react-router-dom';
-
-import LoadingSpinner from '../components/LoadingSpinner';
-
-
+import React, { useState } from "react";
+import { firebaseAuth, firestore } from "../utils/firebase-config";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
-  // Form state for email and password
-  const [formValues, setFormValues] = useState({ email: '', password: '' });
-
-  // UI states
-  const [loading, setLoading] = useState(false); // Show spinner
-  const [successMessage, setSuccessMessage] = useState(''); // Message after signup
-  const [error, setError] = useState(''); 
-
-  const navigate = useNavigate(); // Navigate between pages
-
+  const [formValues, setFormValues] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
-    setError(''); 
+    setError("");
   };
 
-  // Signup logic with Firebase
   const handleSignUp = async () => {
     const { email, password } = formValues;
+    if (!email || !password) { setError("Please fill in both fields."); return; }
 
-      // Log the email and password to the console for debugging
-      console.log("Email: ", email);  
-      console.log("Password: ", password); 
-
-    // Input validation
-    if (!email || !password) {
-      setError("Please fill in both fields.");
-      return;
-    }
-
-    setSuccessMessage("Successfully created account!");
-    setLoading(true); // Show spinner
-
+    setLoading(true);
     try {
-      // Create Firebase user
       const { user } = await createUserWithEmailAndPassword(firebaseAuth, email, password);
-
-      // Add user document to Firestore with default premium status
-      await setDoc(doc(firestore, "users", user.uid), {
-        email: user.email,
-        isPremium: false, // default to free account if ever hack can be easily modified since front end and no checks 
-      });
-
-      // Show spinner for a moment then redirect to home
-      setTimeout(() => {
-        setLoading(false);
-        navigate("/home");
-      }, 3000);
-
-    } catch (error) {
-      console.error("Signup failed:", error.message);
-      setError("Signup failed. Try a different email."); 
-      setSuccessMessage('');
+      await setDoc(doc(firestore, "users", user.uid), { email: user.email, isPremium: false });
+      sessionStorage.setItem("anihub_new_user", "1");
+      setTimeout(() => { setLoading(false); navigate("/subscribe"); }, 2000);
+    } catch (err) {
+      console.error("Signup failed:", err.message);
+      setError("Signup failed. Try a different email.");
       setLoading(false);
     }
   };
 
-  // Show loading spinner while account is being created
+  const handleKey = (e) => { if (e.key === "Enter") handleSignUp(); };
+
   if (loading) {
-    return <LoadingSpinner message={successMessage} />;
+    return (
+      <div style={s.page}>
+        <div style={s.gridOverlay} />
+        <div style={s.scanlines} />
+        <div style={s.centered}>
+          <div style={s.spinner} />
+          <p style={s.loadingText}>CREATING ACCOUNT...</p>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
   }
 
-  // signup form UI
   return (
-    <Container>
-      <AuthBackground />
-      <div className="content">
-        <Header />
-        <div className="body">
-          <div className="text">
-            <h1>Unlimited Donghua and Anime, Anytime, Anywhere</h1>
-            <h4>Stream your favorite Chinese and Japanese animated shows</h4>
+    <div style={s.page}>
+      <div style={s.gridOverlay} />
+      <div style={s.scanlines} />
+
+      <div style={s.centered}>
+        {/* Logo */}
+        <div style={s.logoWrap}>
+          <div style={s.logo}>
+            <span style={s.logoAni}>ANI</span>
+            <span style={s.logoHub}>HUB</span>
           </div>
-          <div className="title">
-            <h3>Create Account</h3>
+          <p style={s.logoTagline}>Join the community.</p>
+        </div>
+
+        <div style={s.card}>
+          <div style={s.cardHeader}>
+            <div style={s.cardAccent} />
+            <span style={s.cardTitle}>NEW USER REGISTRATION</span>
           </div>
-          <div className="form">
-            <input
-              type="email"
-              placeholder="Email address"
-              name="email"
-              value={formValues.email}
-              onChange={handleInputChange}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              name="password"
-              value={formValues.password}
-              onChange={handleInputChange}
-            />
-            {error && <p className="error-text">{error}</p>}
 
-            <button onClick={handleSignUp}>Create Account</button>
+          <div style={s.form}>
+            <div style={s.inputGroup}>
+              <label style={s.label}>EMAIL</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="user@domain.com"
+                value={formValues.email}
+                onChange={handleInputChange}
+                onKeyDown={handleKey}
+                style={s.input}
+                onFocus={e => { e.currentTarget.style.borderColor = "rgba(192,132,252,0.7)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(192,132,252,0.15)"; e.currentTarget.style.color = "#fff"; }}
+                onBlur={e => { e.currentTarget.style.borderColor = "rgba(192,132,252,0.25)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.color = "#d0b8f0"; }}
+              />
+            </div>
+            <div style={s.inputGroup}>
+              <label style={s.label}>PASSWORD</label>
+              <input
+                type="password"
+                name="password"
+                placeholder="••••••••"
+                value={formValues.password}
+                onChange={handleInputChange}
+                onKeyDown={handleKey}
+                style={s.input}
+                onFocus={e => { e.currentTarget.style.borderColor = "rgba(192,132,252,0.7)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(192,132,252,0.15)"; e.currentTarget.style.color = "#fff"; }}
+                onBlur={e => { e.currentTarget.style.borderColor = "rgba(192,132,252,0.25)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.color = "#d0b8f0"; }}
+              />
+            </div>
 
-            <div className="or-text">or</div>
+            {error && <p style={s.errorText}>{error}</p>}
 
-            <button className="login-button" onClick={() => navigate('/login')}>
-              Login
+            <button
+              onClick={handleSignUp}
+              style={s.primaryBtn}
+              onMouseEnter={e => Object.assign(e.currentTarget.style, s.primaryBtnHover)}
+              onMouseLeave={e => Object.assign(e.currentTarget.style, s.primaryBtn)}
+            >
+              CREATE ACCOUNT
+            </button>
+
+            <div style={s.orRow}>
+              <div style={s.orLine} />
+              <span style={s.orText}>OR</span>
+              <div style={s.orLine} />
+            </div>
+
+            <button
+              onClick={() => navigate("/login")}
+              style={s.secondaryBtn}
+              onMouseEnter={e => Object.assign(e.currentTarget.style, s.secondaryBtnHover)}
+              onMouseLeave={e => Object.assign(e.currentTarget.style, s.secondaryBtn)}
+            >
+              LOGIN
             </button>
           </div>
         </div>
+
+        {/* Credit */}
+        <div style={s.credit}>
+          <span style={s.creditSite}>ANIHUB</span>
+          <span style={s.creditDot}>·</span>
+          <span style={s.creditText}>Developed by <span style={s.creditName}>JimmieXiong</span></span>
+        </div>
       </div>
-    </Container>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
   );
 }
 
-const Container = styled.div`
-  position: relative;
-  height: 100vh;
-  width: 100vw;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden;
+const s = {
+  page: {
+    background: "radial-gradient(ellipse at 15% 35%, rgba(88,80,220,0.15) 0%, transparent 55%), radial-gradient(ellipse at 85% 15%, rgba(56,189,248,0.08) 0%, transparent 45%), radial-gradient(ellipse at 55% 85%, rgba(192,132,252,0.1) 0%, transparent 50%), #07071a",
+    minHeight: "100vh", position: "relative", overflowX: "hidden",
+    fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  },
+  gridOverlay: {
+    position: "fixed", inset: 0,
+    backgroundImage: `linear-gradient(rgba(88,80,220,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(88,80,220,0.05) 1px, transparent 1px)`,
+    backgroundSize: "40px 40px", pointerEvents: "none", zIndex: 0,
+  },
+  scanlines: {
+    position: "fixed", inset: 0,
+    background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px)",
+    pointerEvents: "none", zIndex: 1,
+  },
+  centered: {
+    position: "relative", zIndex: 2,
+    display: "flex", flexDirection: "column",
+    alignItems: "center", gap: "2rem",
+    width: "100%", maxWidth: 500, padding: "2rem",
+  },
 
-  .content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  logoWrap: { display: "flex", flexDirection: "column", alignItems: "center", gap: "0.6rem" },
+  logo: {
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
+    fontSize: "3.8rem", fontWeight: 900, letterSpacing: "0.12em",
+  },
+  logoAni: { color: "#38bdf8", textShadow: "0 0 24px rgba(56,189,248,0.7), 0 0 60px rgba(56,189,248,0.25)" },
+  logoHub: { color: "#c084fc", textShadow: "0 0 24px rgba(192,132,252,0.7), 0 0 60px rgba(192,132,252,0.25)" },
+  logoTagline: { color: "#60607a", fontSize: "0.82rem", letterSpacing: "0.2em", margin: 0 },
 
-  .body {
-    align-items: center;
-    text-align: center;
-    max-width: 420px;
-    background: rgba(255, 255, 255, 0.1); // semi-transparent background
-    backdrop-filter: blur(14px); // frosted glass effect
-    border-radius: 16px;
-    padding: 2.5rem 2rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-  }
+  card: {
+    width: "100%",
+    background: "rgba(192,132,252,0.03)",
+    border: "1px solid rgba(192,132,252,0.2)",
+    boxShadow: "0 0 60px rgba(192,132,252,0.06)",
+  },
+  cardHeader: {
+    display: "flex", alignItems: "center", gap: "0.75rem",
+    padding: "1.1rem 1.75rem",
+    borderBottom: "1px solid rgba(192,132,252,0.1)",
+  },
+  cardAccent: { width: 4, height: 18, background: "#c084fc", boxShadow: "0 0 10px #c084fc", borderRadius: 2 },
+  cardTitle: { color: "rgba(192,132,252,0.75)", fontSize: "0.75rem", letterSpacing: "0.35em" },
 
-  .text {
-    margin-bottom: 0.5rem;
+  form: { display: "flex", flexDirection: "column", gap: "1.5rem", padding: "1.75rem" },
+  inputGroup: { display: "flex", flexDirection: "column", gap: "0.55rem" },
+  label: { color: "#a880cc", fontSize: "0.78rem", letterSpacing: "0.28em", fontWeight: 700 },
+  input: {
+    background: "rgba(192,132,252,0.04)",
+    border: "1px solid rgba(192,132,252,0.25)",
+    borderRadius: 0, color: "#d0b8f0",
+    padding: "0.9rem 1.1rem",
+    fontSize: "0.95rem", letterSpacing: "0.05em",
+    fontFamily: "'Share Tech Mono', monospace",
+    outline: "none", transition: "border-color 0.2s, box-shadow 0.2s, color 0.2s",
+    width: "100%", boxSizing: "border-box",
+  },
+  errorText: { color: "#f87171", fontSize: "0.82rem", letterSpacing: "0.08em", margin: 0 },
 
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 600;
-      line-height: 1.4;
-    }
+  primaryBtn: {
+    background: "rgba(192,132,252,0.1)", color: "#c084fc",
+    border: "1px solid rgba(192,132,252,0.5)",
+    padding: "1rem", width: "100%",
+    fontSize: "0.95rem", fontWeight: 700, letterSpacing: "0.3em",
+    cursor: "pointer", transition: "all 0.2s",
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
+    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+  },
+  primaryBtnHover: {
+    background: "#c084fc", color: "#000",
+    border: "1px solid #c084fc",
+    boxShadow: "0 0 32px rgba(192,132,252,0.4)",
+    padding: "1rem", width: "100%",
+    fontSize: "0.95rem", fontWeight: 700, letterSpacing: "0.3em",
+    cursor: "pointer", transition: "all 0.2s",
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
+    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+  },
+  orRow: { display: "flex", alignItems: "center", gap: "1rem" },
+  orLine: { flex: 1, height: 1, background: "rgba(255,255,255,0.08)" },
+  orText: { color: "#5a5a72", fontSize: "0.75rem", letterSpacing: "0.3em" },
 
-    h4 {
-      font-size: 1rem;
-      font-weight: 400;
-    }
-  }
+  secondaryBtn: {
+    background: "transparent", color: "#9090b0",
+    border: "1px solid rgba(255,255,255,0.15)",
+    padding: "1rem", width: "100%",
+    fontSize: "0.95rem", fontWeight: 700, letterSpacing: "0.3em",
+    cursor: "pointer", transition: "all 0.2s",
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
+    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+  },
+  secondaryBtnHover: {
+    background: "rgba(56,189,248,0.1)", color: "#38bdf8",
+    border: "1px solid rgba(56,189,248,0.5)",
+    boxShadow: "0 0 22px rgba(56,189,248,0.15)",
+    padding: "1rem", width: "100%",
+    fontSize: "0.95rem", fontWeight: 700, letterSpacing: "0.3em",
+    cursor: "pointer", transition: "all 0.2s",
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
+    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+  },
 
-  .title {
-    margin-top: 0.75rem;
+  credit: { display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center" },
+  creditSite: {
+    color: "#c084fc", fontSize: "0.82rem", fontWeight: 700,
+    letterSpacing: "0.2em", fontFamily: "'Orbitron', monospace",
+    textShadow: "0 0 10px rgba(192,132,252,0.4)",
+  },
+  creditDot: { color: "#3a3a5a", fontSize: "0.82rem" },
+  creditText: { color: "#606080", fontSize: "0.78rem", letterSpacing: "0.08em" },
+  creditName: { color: "#c084fc", fontStyle: "normal", fontWeight: 700, letterSpacing: "0.12em", textShadow: "0 0 12px rgba(192,132,252,0.5)" },
 
-    h3 {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: #fff;
-    }
-  }
-
-  .form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    margin-top: 1rem;
-
-    input {
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 8px;
-      color: #fff;
-
-      &::placeholder {
-        color: #ccc;
-      }
-
-      &:focus {
-        outline: none;
-        border-color: #fff;
-      }
-    }
-
-    button {
-      padding: 0.75rem;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-      width: 100%;
-    }
-
-    // Primary sign-up button style
-    button:not(.login-button) {
-      background-color: #e50914;
-      color: white;
-      border: none;
-
-      &:hover {
-        background-color: #f40612;
-        transform: translateY(-1px);
-      }
-    }
-
-    .or-text {
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #ccc;
-    }
-
-    // Secondary outlined login button
-    .login-button {
-      background: transparent;
-      border: 1px solid #fff;
-      color: #fff;
-
-      &:hover {
-        background-color: #fff;
-        color: #000;
-        transform: translateY(-1px);
-      }
-    }
-
-    .error-text {
-      color: #ff6b6b;
-      font-size: 0.9rem;
-      text-align: left;
-      margin: -0.5rem 0 0;
-    }
-  }
-`;
+  spinner: {
+    width: 42, height: 42,
+    border: "2px solid rgba(192,132,252,0.15)",
+    borderTopColor: "#c084fc", borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
+  },
+  loadingText: { color: "#a880cc", fontSize: "0.82rem", letterSpacing: "0.3em", margin: 0 },
+};

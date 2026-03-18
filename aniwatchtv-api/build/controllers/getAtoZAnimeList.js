@@ -24,7 +24,7 @@ const getAtoZAnimeList = (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(200).json(data);
     }
     catch (error) {
-        console.error("❌ Error in getAtoZAnimeList:", error);
+        console.error("Error in getAtoZAnimeList:", error);
         res.status(500).json({ error: "Failed to load A-Z anime list" });
     }
 });

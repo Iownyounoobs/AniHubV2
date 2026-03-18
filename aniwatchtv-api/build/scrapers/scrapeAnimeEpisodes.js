@@ -59,15 +59,15 @@ const scrapeAnimeEpisodes = (animeId) => __awaiter(void 0, void 0, void 0, funct
         episodes: [],
     };
     try {
-        const { BASE, AJAX } = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
-        const cleanId = animeId.split("-").pop(); // Get unique episode ID
-        const response = yield axios_1.default.get(`${AJAX}/v2/episode/list/${cleanId}`, {
+        const URLs = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
+        const cleanId = animeId.split("-").pop();
+        const response = yield axios_1.default.get(`${URLs.AJAX}/v2/episode/list/${cleanId}`, {
             headers: {
                 "User-Agent": headers_1.headers.USER_AGENT_HEADER,
                 "X-Requested-With": "XMLHttpRequest",
-                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODING_HEADER,
+                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODEING_HEADER,
                 Accept: headers_1.headers.ACCEPT_HEADER,
-                Referer: `${BASE}/watch/${animeId}`,
+                Referer: `${URLs.BASE}/watch/${animeId}`,
             },
         });
         const $ = (0, cheerio_1.load)(response.data.html);
@@ -77,7 +77,7 @@ const scrapeAnimeEpisodes = (animeId) => __awaiter(void 0, void 0, void 0, funct
         return result;
     }
     catch (err) {
-        console.error("Error in scrapeEpisodesPage:", err);
+        console.error("Error in scrapeAnimeEpisodes:", err);
         if (err instanceof axios_1.AxiosError) {
             throw (0, http_errors_1.default)(((_a = err.response) === null || _a === void 0 ? void 0 : _a.status) || 500, ((_b = err.response) === null || _b === void 0 ? void 0 : _b.statusText) || "Something went wrong");
         }

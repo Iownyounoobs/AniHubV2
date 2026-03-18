@@ -54,7 +54,7 @@ const http_errors_1 = __importDefault(require("http-errors"));
 const extractors_1 = require("../extractors");
 const megacloud_1 = __importDefault(require("../utils/megacloud"));
 const scrapeStreamingSourceFromMegaCloud = (episodeIdOrUrl_1, ...args_1) => __awaiter(void 0, [episodeIdOrUrl_1, ...args_1], void 0, function* (episodeIdOrUrl, category = "sub") {
-    var _a, _b;
+    var _a, _b, _c, _d;
     const aniwatchUrls = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
     // If it's a direct link, resolve using MegaCloud and return
     if (episodeIdOrUrl.startsWith("http")) {
@@ -65,12 +65,9 @@ const scrapeStreamingSourceFromMegaCloud = (episodeIdOrUrl_1, ...args_1) => __aw
     console.log("Episode Page URL:", episodeWatchUrl);
     try {
         // Step 1: Get episode servers HTML
-        const { data } = yield axios_1.default.get(`${aniwatchUrls.AJAX}/v2/episode/servers?episodeId=${episodeWatchUrl.split("?ep=")[1]}`, {
-            headers: {
-                Referer: episodeWatchUrl,
-                "User-Agent": headers_1.headers.USER_AGENT_HEADER,
-                "X-Requested-With": "XMLHttpRequest",
-            },
+        const episodeId = episodeWatchUrl.split("?ep=")[1];
+        const { data } = yield axios_1.default.get(`${aniwatchUrls.AJAX}/v2/episode/servers?episodeId=${episodeId}`, {
+            headers: Object.assign(Object.assign({}, headers_1.headers), { Referer: episodeWatchUrl, "X-Requested-With": "XMLHttpRequest" }),
         });
         const $ = (0, cheerio_1.load)(data.html);
         // Step 2: Extract server ID
@@ -82,13 +79,39 @@ const scrapeStreamingSourceFromMegaCloud = (episodeIdOrUrl_1, ...args_1) => __aw
         // Step 3: Get streaming URL using the server ID
         const { data: { link: streamingUrl }, } = yield axios_1.default.get(`${aniwatchUrls.AJAX}/v2/episode/sources?id=${serverId}`);
         console.log("Streaming Link:", streamingUrl);
-        // Use MegaCloud on the resolved link
-        return yield new megacloud_1.default().extract2(new URL(streamingUrl));
+        // Try axios-based extraction first, then WASM, then Puppeteer interception
+        let extracted = { sources: [], subtitles: [] };
+        let needsPuppeteer = false;
+        try {
+            extracted = yield new megacloud_1.default().extract(new URL(streamingUrl));
+            if (!((_a = extracted === null || extracted === void 0 ? void 0 : extracted.sources) === null || _a === void 0 ? void 0 : _a.length))
+                needsPuppeteer = true;
+        }
+        catch (extractErr) {
+            console.warn("MegaCloud extract failed, trying extract2:", extractErr === null || extractErr === void 0 ? void 0 : extractErr.message);
+            needsPuppeteer = true;
+        }
+        if (needsPuppeteer) {
+            needsPuppeteer = false;
+            try {
+                extracted = yield new megacloud_1.default().extract2(new URL(streamingUrl));
+                if (!((_b = extracted === null || extracted === void 0 ? void 0 : extracted.sources) === null || _b === void 0 ? void 0 : _b.length))
+                    needsPuppeteer = true;
+            }
+            catch (megaErr) {
+                console.warn("MegaCloud extract2 threw:", megaErr === null || megaErr === void 0 ? void 0 : megaErr.message);
+                needsPuppeteer = true;
+            }
+        }
+        if (needsPuppeteer) {
+            console.log("Both MegaCloud methods failed — returning embedUrl fallback");
+        }
+        return Object.assign(Object.assign({}, extracted), { embedUrl: streamingUrl });
     }
     catch (err) {
         console.error("Error in scrapeStreamingSourceFromMegaCloud:", err);
         if (err instanceof axios_1.AxiosError) {
-            throw (0, http_errors_1.default)(((_a = err.response) === null || _a === void 0 ? void 0 : _a.status) || 500, ((_b = err.response) === null || _b === void 0 ? void 0 : _b.statusText) || "Something went wrong while fetching sources");
+            throw (0, http_errors_1.default)(((_c = err.response) === null || _c === void 0 ? void 0 : _c.status) || 500, ((_d = err.response) === null || _d === void 0 ? void 0 : _d.statusText) || "Something went wrong while fetching sources");
         }
         else {
             throw http_errors_1.default.InternalServerError("Internal server error");

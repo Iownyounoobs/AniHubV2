@@ -68,18 +68,27 @@ const scrapeAnimeSearchResults = (query, page) => __awaiter(void 0, void 0, void
     try {
         const { SEARCH } = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
         const response = yield axios_1.default.get(`${SEARCH}?keyword=${query}&page=${page}`, {
-            headers: {
-                "User-Agent": headers_1.headers.USER_AGENT_HEADER,
-                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODING_HEADER,
-                Accept: headers_1.headers.ACCEPT_HEADER,
-            },
+            headers: headers_1.headers,
         });
         const $ = (0, cheerio_1.load)(response.data);
         const animeSelector = "#main-content .tab-content .film_list-wrap .flw-item";
         const popularSelector = "#main-sidebar .block_area.block_area_sidebar.block_area-realtime .anif-block-ul ul li";
         const genreSelector = "#main-sidebar .block_area.block_area_sidebar.block_area-genres .sb-genre-list li";
-        result.animes = (0, extractors_1.extractSearchedAnimes)($, animeSelector);
-        result.mostPopularAnimes = (0, extractors_1.extractMostPopularAnimes)($, popularSelector);
+        // Clean and deduplicate animes
+        const rawAnimes = (0, extractors_1.extractSearchedAnimes)($, animeSelector);
+        const seen = new Set();
+        result.animes = rawAnimes.filter((anime) => {
+            if (!anime.id)
+                return false;
+            anime.id = anime.id.split("?")[0];
+            if (seen.has(anime.id))
+                return false;
+            seen.add(anime.id);
+            return true;
+        });
+        if (page === 1) {
+            result.mostPopularAnimes = (0, extractors_1.extractMostPopularAnimes)($, popularSelector);
+        }
         result.genres = (0, extractors_1.extractGenreList)($, genreSelector);
         const totalPages = (_b = (_a = $('.pagination > .page-item a[title="Last"]')) === null || _a === void 0 ? void 0 : _a.attr("href")) === null || _b === void 0 ? void 0 : _b.split("=").pop();
         const fallbackPages = (_d = (_c = $('.pagination > .page-item a[title="Next"]')) === null || _c === void 0 ? void 0 : _c.attr("href")) === null || _d === void 0 ? void 0 : _d.split("=").pop();

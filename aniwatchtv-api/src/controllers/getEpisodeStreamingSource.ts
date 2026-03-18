@@ -34,8 +34,13 @@ const getEpisodeStreamingSourceInfo: RequestHandler = async (req, res) => {
 
     const aniwatchUrls = await getAniWatchTVUrls();
 
-    // Get stream info from MegaCloud for this episode
-    const streamingData = await scrapeStreamingSourceFromMegaCloud(episodeId, category);
+    // Get stream info from MegaCloud for this episode (non-fatal)
+    let streamingData: any = { sources: [], subtitles: [] };
+    try {
+      streamingData = await scrapeStreamingSourceFromMegaCloud(episodeId, category);
+    } catch (streamErr: any) {
+      console.warn("MegaCloud unavailable, returning metadata only:", streamErr.message);
+    }
 
     // To fetch AniList and MAL IDs, we need to parse the parent anime page
     // These IDs let us connect this anime to official external APIs like AniList or MAL

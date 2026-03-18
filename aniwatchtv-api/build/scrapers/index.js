@@ -1,19 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scrapeAtoZAnimeList = exports.scrapeStreamingSourceFromMegaCloud = exports.scrapeEpisodeServerList = exports.scrapeAnimeEpisodes = exports.scrapeAnimeCategories = exports.scrapeAnimeSearchResults = exports.scrapeAnimeDetails = exports.scrapeHomePage = void 0;
-const scrapeHomePage_1 = require("./scrapeHomePage"); // good
+exports.scrapeTrendingAnimes = exports.scrapeLatestUpdated = exports.scrapeAtoZAnimeList = exports.scrapeStreamingSourceFromMegaCloud = exports.scrapeEpisodeServerList = exports.scrapeAnimeEpisodes = exports.scrapeAnimeCategories = exports.scrapeAnimeSearchResults = exports.scrapeAnimeDetails = exports.scrapeHomePage = void 0;
+const scrapeHomePage_1 = require("./scrapeHomePage");
 Object.defineProperty(exports, "scrapeHomePage", { enumerable: true, get: function () { return scrapeHomePage_1.scrapeHomePage; } });
-const scrapeAnimeDetails_1 = require("./scrapeAnimeDetails"); // good 
+const scrapeAnimeDetails_1 = require("./scrapeAnimeDetails");
 Object.defineProperty(exports, "scrapeAnimeDetails", { enumerable: true, get: function () { return scrapeAnimeDetails_1.scrapeAnimeDetails; } });
-const scrapeAnimeSearchResults_1 = require("./scrapeAnimeSearchResults"); // good 
+const scrapeAnimeSearchResults_1 = require("./scrapeAnimeSearchResults");
 Object.defineProperty(exports, "scrapeAnimeSearchResults", { enumerable: true, get: function () { return scrapeAnimeSearchResults_1.scrapeAnimeSearchResults; } });
-const scrapeAnimeCategories_1 = require("./scrapeAnimeCategories"); // good
+const scrapeAnimeCategories_1 = require("./scrapeAnimeCategories");
 Object.defineProperty(exports, "scrapeAnimeCategories", { enumerable: true, get: function () { return scrapeAnimeCategories_1.scrapeAnimeCategories; } });
-const scrapeAnimeEpisodes_1 = require("./scrapeAnimeEpisodes"); // good scrapes all anime Episodes
+const scrapeAnimeEpisodes_1 = require("./scrapeAnimeEpisodes");
 Object.defineProperty(exports, "scrapeAnimeEpisodes", { enumerable: true, get: function () { return scrapeAnimeEpisodes_1.scrapeAnimeEpisodes; } });
 const scrapeEpisodeServerList_1 = require("./scrapeEpisodeServerList");
 Object.defineProperty(exports, "scrapeEpisodeServerList", { enumerable: true, get: function () { return scrapeEpisodeServerList_1.scrapeEpisodeServerList; } });
 const scrapeStreamingSourceFromMegaCloud_1 = require("./scrapeStreamingSourceFromMegaCloud");
 Object.defineProperty(exports, "scrapeStreamingSourceFromMegaCloud", { enumerable: true, get: function () { return scrapeStreamingSourceFromMegaCloud_1.scrapeStreamingSourceFromMegaCloud; } });
-const scrapeAtoZAnimeList_1 = require("./scrapeAtoZAnimeList"); // good
+const scrapeAtoZAnimeList_1 = require("./scrapeAtoZAnimeList");
 Object.defineProperty(exports, "scrapeAtoZAnimeList", { enumerable: true, get: function () { return scrapeAtoZAnimeList_1.scrapeAtoZAnimeList; } });
+const scrapeLatestUpdated_1 = require("./scrapeLatestUpdated");
+Object.defineProperty(exports, "scrapeLatestUpdated", { enumerable: true, get: function () { return scrapeLatestUpdated_1.scrapeLatestUpdated; } });
+const scrapeTrendingOnly_1 = require("./scrapeTrendingOnly");
+Object.defineProperty(exports, "scrapeTrendingAnimes", { enumerable: true, get: function () { return scrapeTrendingOnly_1.scrapeTrendingAnimes; } });

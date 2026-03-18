@@ -13,17 +13,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = __importDefault(require("crypto"));
+const https_1 = __importDefault(require("https"));
 const video_extractors_1 = __importDefault(require("./video-extractors"));
 const megacloud_getsrcs_1 = require("./megacloud.getsrcs");
 const megacloud = {
-    script: "https://megacloud.tv/js/player/a/prod/e1-player.min.js?v=",
-    sources: "https://megacloud.tv/embed-2/ajax/e-1/getSources?id=",
+    script: "https://megacloud.blog/js/player/a/prod/e1-player.min.js?v=",
+    sources: "https://megacloud.blog/embed-2/ajax/v3/e-1/getSources?id=",
 };
 class MegaCloud extends video_extractors_1.default {
     constructor() {
-        super(...arguments);
+        super();
         this.serverName = "MegaCloud";
         this.sources = [];
+        this.client.defaults.httpsAgent = new https_1.default.Agent({ rejectUnauthorized: false });
     }
     extract(videoUrl) {
         return __awaiter(this, void 0, void 0, function* () {

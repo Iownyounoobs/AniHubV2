@@ -17,7 +17,7 @@ exports.BASE_URL = BASE_URL;
 // Constructs full AniWatch route paths
 const buildAniWatchTVUrls = (baseUrl) => ({
     BASE: baseUrl,
-    HOME: `${baseUrl}/home`,
+    HOME: `${baseUrl}/home`, // IMPORTANT ROUTE DO NOT CHANGE OR YOU WILL GO CRAZY DEBUGGING!!!
     SEARCH: `${baseUrl}/search`,
     GENRE: `${baseUrl}/genre`,
     AJAX: `${baseUrl}/ajax`,

@@ -69,25 +69,29 @@ const scrapeAnimeCategories = (category, page) => __awaiter(void 0, void 0, void
     };
     try {
         const { BASE } = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
-        const url = `${BASE}/${category}?page=${page}`;
+        const isFirstPage = page === 1;
+        const fixedCategory = category === "latest" ? "recently-updated" : category;
+        const url = isFirstPage
+            ? `${BASE}/${fixedCategory}`
+            : `${BASE}/${fixedCategory}?page=${page}`;
+        console.log(`Fetching URL: ${url}`);
         const response = yield axios_1.default.get(url, {
-            headers: {
-                "User-Agent": headers_1.headers.USER_AGENT_HEADER,
-                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODING_HEADER,
-                Accept: headers_1.headers.ACCEPT_HEADER,
-            },
+            headers: headers_1.headers,
         });
+        // Debugging the raw HTML response
+        console.log("HTML Preview:", response.data.slice(0, 500));
         const $ = (0, cheerio_1.load)(response.data);
-        // Selectors
-        const animeSelector = "#main-content .tab-content .film_list-wrap .flw-item";
+        const animeSelector = category === "latest"
+            ? ".film_list-wrap .flw-item"
+            : "#main-content .tab-content .film_list-wrap .flw-item";
+        console.log("Found anime count:", $(animeSelector).length); // This will show how many anime items are found by the selector
         const categorySelector = "#main-content .block_area .block_area-header .cat-heading";
         const top10Selector = '#main-sidebar .block_area-realtime [id^="top-viewed-"]';
         const genreSelector = "#main-sidebar .block_area.block_area_sidebar.block_area-genres .sb-genre-list li";
-        // Extraction
         result.category = ((_b = (_a = $(categorySelector)) === null || _a === void 0 ? void 0 : _a.text()) === null || _b === void 0 ? void 0 : _b.trim()) || category;
         result.animes = (0, extractors_1.extractCategoryAnimes)($, animeSelector);
+        console.log("Extracted Animes:", result.animes); // Log the animes extracted
         result.genres = (0, extractors_1.extractGenreList)($, genreSelector);
-        // Pagination
         const $pagination = $(".pagination > li");
         if ($pagination.length > 0) {
             const isLastActive = $(".pagination > li").last().hasClass("active");
@@ -98,7 +102,6 @@ const scrapeAnimeCategories = (category, page) => __awaiter(void 0, void 0, void
         if (result.animes.length === 0 && !result.hasNextPage) {
             result.totalPages = 0;
         }
-        // Top 10 by time period
         $(top10Selector).each((_i, el) => {
             var _a, _b, _c;
             const type = (_c = (_b = (_a = $(el).attr("id")) === null || _a === void 0 ? void 0 : _a.split("-")) === null || _b === void 0 ? void 0 : _b.pop()) === null || _c === void 0 ? void 0 : _c.trim();
@@ -114,7 +117,7 @@ const scrapeAnimeCategories = (category, page) => __awaiter(void 0, void 0, void
         return result;
     }
     catch (err) {
-        console.error("❌ Error in scrapeAnimeCategories:", err);
+        console.error("scrapeAnimeCategories error:", err);
         if (err instanceof axios_1.AxiosError) {
             throw (0, http_errors_1.default)(((_k = err.response) === null || _k === void 0 ? void 0 : _k.status) || 500, ((_l = err.response) === null || _l === void 0 ? void 0 : _l.statusText) || "Something went wrong");
         }

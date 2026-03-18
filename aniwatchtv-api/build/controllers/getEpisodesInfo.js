@@ -14,23 +14,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEpisodesInfo = void 0;
 const http_errors_1 = __importDefault(require("http-errors"));
-const scrapers_1 = require("../scrapers"); // Assumes you have index.ts
+const scrapers_1 = require("../scrapers");
 /**
- * GET /aniwatchtv/episodes/:id
- * Retrieves all episodes for the given anime ID
+ * GET /aniwatchtv/anime/:id/episodes
+ * fetch all episodes for a specific anime
  */
 const getEpisodesInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const animeId = req.params.id ? decodeURIComponent(req.params.id) : null;
-        if (!animeId) {
-            throw http_errors_1.default.BadRequest("Anime ID is required");
+        // Extract anime ID from route parameter and decode URI
+        const anime_id = req.params.id ? decodeURIComponent(req.params.id) : null;
+        if (!anime_id) {
+            throw http_errors_1.default.BadRequest("Anime Id Required");
         }
-        const episodesData = yield (0, scrapers_1.scrapeEpisodeServerList)(animeId);
-        res.status(200).json(episodesData);
+        // call scraper to fetch all episodes for the anime
+        const data = yield (0, scrapers_1.scrapeAnimeEpisodes)(anime_id);
+        res.status(200).json(data);
     }
     catch (err) {
-        console.error("❌ Error in getEpisodesInfo:", err);
-        res.status(500).json({ error: "Failed to fetch episodes for the anime" });
+        console.error("Error in getEpisodesInfo:", err);
+        res.status(500).json({ error: "Failed to fetch episode info" });
     }
 });
 exports.getEpisodesInfo = getEpisodesInfo;

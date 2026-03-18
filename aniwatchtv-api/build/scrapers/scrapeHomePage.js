@@ -46,12 +46,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scrapeHomePage = void 0;
-const aniwatchtvRoutes_1 = require("../utils/aniwatchtvRoutes");
-const headers_1 = require("../config/headers");
 const axios_1 = __importStar(require("axios"));
 const cheerio_1 = require("cheerio");
 const http_errors_1 = __importDefault(require("http-errors"));
+const headers_1 = require("../config/headers");
 const extractors_1 = require("../extractors");
+const aniwatchtvRoutes_1 = require("../utils/aniwatchtvRoutes");
 const scrapeHomePage = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const result = {
@@ -72,29 +72,39 @@ const scrapeHomePage = () => __awaiter(void 0, void 0, void 0, function* () {
         topUpcomingAnimes: [],
         genres: [],
     };
+    const URLs = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
     try {
-        const { HOME } = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
-        const response = yield axios_1.default.get(HOME, {
+        const mainPage = yield axios_1.default.get(URLs.HOME, {
             headers: {
                 "User-Agent": headers_1.headers.USER_AGENT_HEADER,
-                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODING_HEADER,
                 Accept: headers_1.headers.ACCEPT_HEADER,
+                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODEING_HEADER,
             },
         });
-        const $ = (0, cheerio_1.load)(response.data);
-        result.trendingAnimes = (0, extractors_1.extractTrendingAnimes)($, "#anime-trending #trending-home .swiper-wrapper .swiper-slide");
-        result.latestEpisodes = (0, extractors_1.extractLatestEpisodes)($, "#main-content .block_area_home:nth-of-type(1) .tab-content .film_list-wrap .flw-item");
-        result.featuredAnimes.topAiringAnimes = (0, extractors_1.extractFeaturedAnimes)($, "#anime-featured .row div:nth-of-type(1) .anif-block-ul ul li");
-        result.featuredAnimes.mostPopularAnimes = (0, extractors_1.extractFeaturedAnimes)($, "#anime-featured .row div:nth-of-type(2) .anif-block-ul ul li");
-        result.featuredAnimes.mostFavoriteAnimes = (0, extractors_1.extractFeaturedAnimes)($, "#anime-featured .row div:nth-of-type(3) .anif-block-ul ul li");
-        result.featuredAnimes.latestCompletedAnimes = (0, extractors_1.extractFeaturedAnimes)($, "#anime-featured .row div:nth-of-type(4) .anif-block-ul ul li");
-        result.topUpcomingAnimes = (0, extractors_1.extractTopUpcomingAnimes)($, "#main-content .block_area_home:nth-of-type(3) .tab-content .film_list-wrap .flw-item");
-        result.spotLightAnimes = (0, extractors_1.extractSpotlightAnimes)($, "#slider .swiper-wrapper .swiper-slide");
-        result.genres = (0, extractors_1.extractGenreList)($, "#main-sidebar .block_area.block_area_sidebar.block_area-genres .sb-genre-list li");
-        $('#main-sidebar .block_area-realtime [id^="top-viewed-"]').each((_i, el) => {
-            var _a, _b, _c;
-            const type = (_c = (_b = (_a = $(el).attr("id")) === null || _a === void 0 ? void 0 : _a.split("-")) === null || _b === void 0 ? void 0 : _b.pop()) === null || _c === void 0 ? void 0 : _c.trim();
-            if (type === "day" || type === "week" || type === "month") {
+        const $ = (0, cheerio_1.load)(mainPage.data);
+        const trendingAnimeSelectors = "#anime-trending #trending-home .swiper-wrapper .swiper-slide";
+        const latestEpisodesSelectors = "#main-content .block_area_home:nth-of-type(1) .tab-content .film_list-wrap .flw-item";
+        const topAiringSelectors = "#anime-featured .row div:nth-of-type(1) .anif-block-ul ul li";
+        const mostPopularSelectors = "#anime-featured .row div:nth-of-type(2) .anif-block-ul ul li";
+        const mostFavoriteSelectors = "#anime-featured .row div:nth-of-type(3) .anif-block-ul ul li";
+        const latestCompletedSelectors = "#anime-featured .row div:nth-of-type(4) .anif-block-ul ul li";
+        const topUpcomingSelectors = "#main-content .block_area_home:nth-of-type(3) .tab-content .film_list-wrap .flw-item";
+        const spotLightSelectors = "#slider .swiper-wrapper .swiper-slide";
+        const genresSelectors = "#main-sidebar .block_area.block_area_sidebar.block_area-genres .sb-genre-list li";
+        const top10Selectors = '#main-sidebar .block_area-realtime [id^="top-viewed-"]';
+        result.trendingAnimes = (0, extractors_1.extractTrendingAnimes)($, trendingAnimeSelectors);
+        result.latestEpisodes = (0, extractors_1.extractLatestEpisodes)($, latestEpisodesSelectors);
+        result.featuredAnimes.topAiringAnimes = (0, extractors_1.extractFeaturedAnimes)($, topAiringSelectors);
+        result.featuredAnimes.mostPopularAnimes = (0, extractors_1.extractFeaturedAnimes)($, mostPopularSelectors);
+        result.featuredAnimes.mostFavoriteAnimes = (0, extractors_1.extractFeaturedAnimes)($, mostFavoriteSelectors);
+        result.featuredAnimes.latestCompletedAnimes = (0, extractors_1.extractFeaturedAnimes)($, latestCompletedSelectors);
+        result.topUpcomingAnimes = (0, extractors_1.extractTopUpcomingAnimes)($, topUpcomingSelectors);
+        result.spotLightAnimes = (0, extractors_1.extractSpotlightAnimes)($, spotLightSelectors);
+        result.genres = (0, extractors_1.extractGenreList)($, genresSelectors);
+        $(top10Selectors).each((_i, el) => {
+            var _a, _b;
+            const type = (_b = (_a = $(el).attr("id")) === null || _a === void 0 ? void 0 : _a.split("-").pop()) === null || _b === void 0 ? void 0 : _b.trim();
+            if (["day", "week", "month"].includes(type)) {
                 result.top10Animes[type] = (0, extractors_1.extractTop10Animes)($, type);
             }
         });
@@ -103,9 +113,11 @@ const scrapeHomePage = () => __awaiter(void 0, void 0, void 0, function* () {
     catch (err) {
         console.error("Error in scrapeHomePage:", err);
         if (err instanceof axios_1.AxiosError) {
-            throw (0, http_errors_1.default)(((_a = err.response) === null || _a === void 0 ? void 0 : _a.status) || 500, ((_b = err.response) === null || _b === void 0 ? void 0 : _b.statusText) || "Something went wrong");
+            throw (0, http_errors_1.default)(((_a = err === null || err === void 0 ? void 0 : err.response) === null || _a === void 0 ? void 0 : _a.status) || 500, ((_b = err === null || err === void 0 ? void 0 : err.response) === null || _b === void 0 ? void 0 : _b.statusText) || "Something went wrong");
         }
-        throw http_errors_1.default.InternalServerError("Internal server error");
+        else {
+            throw http_errors_1.default.InternalServerError("Internal server error");
+        }
     }
 });
 exports.scrapeHomePage = scrapeHomePage;

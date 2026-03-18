@@ -21,17 +21,19 @@ const scrapers_1 = require("../scrapers"); // Import from index.ts
  */
 const getEpisodeServersInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // Get the episode ID from query parameters, decode if URL-encoded
         const episodeId = req.query.id
             ? decodeURIComponent(req.query.id)
             : null;
         if (!episodeId) {
-            throw http_errors_1.default.BadRequest("Episode ID is required");
+            throw http_errors_1.default.BadRequest("Episode ID is required"); // 404 if no episode provided
         }
+        // Call scraper to fetch all available server options for the episode but only scrape megacloud servers as I removed the other sources
         const serverData = yield (0, scrapers_1.scrapeEpisodeServerList)(episodeId);
         res.status(200).json(serverData);
     }
     catch (err) {
-        console.error("❌ Error in getEpisodeServersInfo:", err);
+        console.error("Error in getEpisodeServersInfo:", err);
         res.status(500).json({ error: "Failed to fetch episode server data" });
     }
 });

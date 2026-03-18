@@ -1,6 +1,5 @@
 "use strict";
 /**
- * 🔁 backgroundScraper.ts
  * This script scrapes all anime data from AniWatch's A-Z pages,
  * fetches detailed info (like description, rating, origin),
  * and writes a JSON file to disk.
@@ -28,15 +27,15 @@ const runBackgroundScraper = () => __awaiter(void 0, void 0, void 0, function* (
     const maxPages = 100;
     const allAnimes = [];
     for (let page = 1; page <= maxPages; page++) {
-        console.log(`📄 Fetching A-Z page ${page}...`);
+        console.log(`Fetching A-Z page ${page}...`);
         const animes = yield (0, scrapeAtoZAnimeList_1.scrapeAtoZAnimeList)(page);
         if (!Array.isArray(animes) || animes.length === 0) {
-            console.log("✅ No more animes found. Stopping.");
+            console.log("No more animes found. Stopping.");
             break;
         }
         for (const anime of animes) {
             if (!anime.id) {
-                console.warn("⚠️ Skipping anime with null ID.");
+                console.warn("Skipping anime with null ID.");
                 continue;
             }
             try {
@@ -59,11 +58,11 @@ const runBackgroundScraper = () => __awaiter(void 0, void 0, void 0, function* (
                         dub: (_m = (_l = about.info.episodes) === null || _l === void 0 ? void 0 : _l.dub) !== null && _m !== void 0 ? _m : null,
                         origin,
                     });
-                    console.log(`✅ Scraped: ${(_o = about.info.name) !== null && _o !== void 0 ? _o : anime.id} (${origin})`);
+                    console.log(`Scraped: ${(_o = about.info.name) !== null && _o !== void 0 ? _o : anime.id} (${origin})`);
                 }
             }
             catch (err) {
-                console.error(`❌ Failed scraping ${anime.name || anime.id}:`, err);
+                console.error(`Failed scraping ${anime.name || anime.id}:`, err);
             }
         }
     }

@@ -85,11 +85,7 @@ const scrapeAnimeDetails = (id) => __awaiter(void 0, void 0, void 0, function* (
         const { BASE } = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
         const url = new URL(id, BASE).toString();
         const response = yield axios_1.default.get(url, {
-            headers: {
-                "User-Agent": headers_1.headers.USER_AGENT_HEADER,
-                "Accept-Encoding": headers_1.headers.ACCEPT_ENCODING_HEADER,
-                Accept: headers_1.headers.ACCEPT_HEADER,
-            },
+            headers: headers_1.headers,
         });
         const $ = (0, cheerio_1.load)(response.data);
         result.info = (0, extractors_1.extractAnimeDetails)($, "#ani_detail .container .anis-content");
@@ -103,8 +99,8 @@ const scrapeAnimeDetails = (id) => __awaiter(void 0, void 0, void 0, function* (
             ? studiosRaw.split(",").map((s) => s.trim())
             : [];
         result.origin = (0, detectCountry_1.detectCountry)(studios);
-        console.log("📦 Studios:", studios);
-        console.log("🌎 Detected Origin:", result.origin);
+        console.log("Studios:", studios);
+        console.log("Detected Origin:", result.origin);
         return result;
     }
     catch (err) {

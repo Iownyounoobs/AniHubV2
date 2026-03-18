@@ -8,7 +8,7 @@ export const isSiteReachable = async (url: string): Promise<boolean> => {
       const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
   
       const response = await fetch(url, {
-        method: "HEAD",
+        method: "GET",
         signal: controller.signal,
       });
   

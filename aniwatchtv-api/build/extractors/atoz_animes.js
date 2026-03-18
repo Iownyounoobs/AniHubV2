@@ -25,10 +25,10 @@ const extractAtoZAnimes = ($, selector) => {
             });
         }
         else {
-            console.log("⚠️ Missing data for one item:", { id, name, img });
+            console.log("Missing data for one item:", { id, name, img });
         }
     });
-    console.log("✅ Extracted A-Z animes:", animes.length);
+    console.log("Extracted A-Z animes:", animes.length);
     return animes;
 };
 exports.extractAtoZAnimes = extractAtoZAnimes;

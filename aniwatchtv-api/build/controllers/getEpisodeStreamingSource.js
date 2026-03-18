@@ -21,10 +21,14 @@ const aniwatchtvRoutes_1 = require("../utils/aniwatchtvRoutes");
 const headers_1 = require("../config/headers");
 /**
  * GET /aniwatchtv/episode/source?id=...&category=sub
- * Fetches video stream sources + AniList/MAL ID metadata.
- */
+ * Fetches the video streaming sources from MegaCloud for a specific episode,
+ * and extracts associated anime metadata including AniList and MyAnimeList (MAL) IDs
+ * by parsing the main anime page.
+*/
 const getEpisodeStreamingSourceInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // Get the episode ID from query parameters, decode if URL-encoded
+        // and the category (sub, dub, raw) from query parameters, default to "sub"
         const episodeId = req.query.id
             ? decodeURIComponent(req.query.id)
             : null;
@@ -35,19 +39,33 @@ const getEpisodeStreamingSourceInfo = (req, res) => __awaiter(void 0, void 0, vo
             throw http_errors_1.default.BadRequest("Episode ID is required");
         }
         const aniwatchUrls = yield (0, aniwatchtvRoutes_1.getAniWatchTVUrls)();
-        // 🎥 Get stream info
-        const streamingData = yield (0, scrapeStreamingSourceFromMegaCloud_1.scrapeStreamingSourceFromMegaCloud)(episodeId, category);
-        // 🧠 Extract AniList & MAL IDs
+        // Get stream info from MegaCloud for this episode (non-fatal)
+        let streamingData = { sources: [], subtitles: [] };
+        try {
+            streamingData = yield (0, scrapeStreamingSourceFromMegaCloud_1.scrapeStreamingSourceFromMegaCloud)(episodeId, category);
+        }
+        catch (streamErr) {
+            console.warn("MegaCloud unavailable, returning metadata only:", streamErr.message);
+        }
+        // To fetch AniList and MAL IDs, we need to parse the parent anime page
+        // These IDs let us connect this anime to official external APIs like AniList or MAL
+        // Useful for pulling more data like synopsis, ratings, characters, etc.
+        // Get the base anime page URL (without ?ep= query)
         const animePageUrl = new URL(episodeId.split("?ep=")[0], aniwatchUrls.BASE).href;
+        // Fetch the anime page HTML
+        // Use the same headers as the streaming source request to avoid CORS issues
         const animePage = yield axios_1.default.get(animePageUrl, {
-            headers: {
-                Referer: aniwatchUrls.BASE,
-                "User-Agent": headers_1.headers.USER_AGENT_HEADER,
-                "X-Requested-With": "XMLHttpRequest",
-            },
+            headers: Object.assign(Object.assign({}, headers_1.headers), { Referer: aniwatchUrls.BASE, "X-Requested-With": "XMLHttpRequest" }),
         });
+        // load the HTML into Cheerio for parsing
+        // CheerioAPI is a type from the cheerio library that represents the loaded HTML document
         const $ = (0, cheerio_1.load)(animePage.data);
+        // Extract the streaming data from the HTML using Cheerio
+        // The data is stored in a script tag with the ID "syncData"
+        // This data contains the AniList and MAL IDs in JSON format
         const syncDataText = $("#syncData").text();
+        // default to null if parsing fails
+        // This is a fallback in case the syncDataText is not valid JSON ahhh very smart 
         let malID = null;
         let anilistID = null;
         try {
@@ -58,11 +76,15 @@ const getEpisodeStreamingSourceInfo = (req, res) => __awaiter(void 0, void 0, vo
         catch (_a) {
             // fallback to null
         }
+        // Log the IDs for debugging purposes
+        console.log("AniList ID:", anilistID, "MAL ID:", malID);
+        // Return the streaming data along with the extracted IDs
+        // This allows the client to access both the streaming sources and the anime metadata in one response
         res.status(200).json(Object.assign(Object.assign({}, streamingData), { anilistID,
             malID }));
     }
     catch (err) {
-        console.error("❌ Error in getEpisodeStreamingSourceInfo:", err);
+        console.error("Error in getEpisodeStreamingSourceInfo:", err);
         res.status(500).json({ error: "Failed to fetch episode source data" });
     }
 });

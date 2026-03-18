@@ -2,37 +2,26 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useSearchParams, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Card from "../components/Card";
 
 export default function Search() {
-  // Get query (?q=) and page (?page=) from the URL
   const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get("q") || "";              // Search keyword
-  const pageParam = parseInt(searchParams.get("page")) || 1; // Page number
+  const query = searchParams.get("q") || "";
+  const pageParam = parseInt(searchParams.get("page")) || 1;
 
-  // State for results and pagination
-  const [results, setResults] = useState([]);   // Current search result list
-  const [page, setPage] = useState(pageParam);  // Current page
-  const [totalPages, setTotalPages] = useState(1); // Total pages available
-  const [loading, setLoading] = useState(true); 
+  const [results, setResults] = useState([]);
+  const [page, setPage] = useState(pageParam);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  // Sync internal page state with URL page param
+  useEffect(() => { setPage(pageParam); }, [pageParam]);
+
   useEffect(() => {
-    setPage(pageParam);
-  }, [pageParam]);
-
-  // Fetch search results from the API when query or page changes
-  useEffect(() => {
-    if (!query) return; // If query is empty, skip
-
+    if (!query) return;
     setLoading(true);
     axios
-      .get(
-        `http://localhost:3001/aniwatchtv/search?keyword=${encodeURIComponent(
-          query
-        )}&page=${page}`
-      )
+      .get(`http://localhost:3001/aniwatchtv/search?keyword=${encodeURIComponent(query)}&page=${page}`)
       .then((res) => {
-        // Set results and total pages from the response
         setResults(res.data.animes || []);
         setTotalPages(res.data.totalPages || 1);
         setLoading(false);
@@ -43,84 +32,47 @@ export default function Search() {
       });
   }, [query, page]);
 
-  // Update the URL query string when page changes
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setSearchParams({ q: query, page: newPage });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   return (
-    <div style={styles.wrapper}>
+    <div style={s.page}>
+      <div style={s.gridOverlay} />
+      <div style={s.scanlines} />
       <Navbar />
-      <div style={styles.container}>
-        <h1 style={styles.heading}>Search Results for "{query}"</h1>
+      <div style={s.container}>
+
+        <div style={s.pageHeader}>
+          <div style={s.accentBar} />
+          <h1 style={s.pageTitle}>SEARCH // <span style={s.querySpan}>"{query}"</span></h1>
+          <div style={s.headerLine} />
+        </div>
 
         {loading && page === 1 ? (
-          <p>Loading...</p>
+          <div style={s.statusMsg}>SEARCHING...</div>
         ) : results.length === 0 ? (
-          <p>No results found.</p>
+          <div style={s.statusMsg}>NO RESULTS FOUND FOR "{query}"</div>
         ) : (
           <>
-            {/* Anime result grid */}
-            <div style={styles.grid}>
-              {results.map((anime, index) => {
-                // Fallback logic to identify anime
-                const animeId = anime.id || anime.animeId || anime.slug;
-                const title =
-                  anime.name?.trim() || anime.title?.trim() || "Untitled";
-
-                return (
-                  <Link
-                    key={`${animeId}-${index}`}
-                    to={`/anime/${animeId}`}
-                    style={styles.cardLink}
-                  >
-                    <div style={styles.card}>
-                      <img src={anime.img} alt={title} style={styles.image} />
-                      <h3 style={styles.title}>{title}</h3>
-                    </div>
-                  </Link>
-                );
-              })}
+            <div style={s.grid}>
+              {results.map((anime, index) => (
+                <Card key={`${anime.id}-${index}`} anime={anime} />
+              ))}
             </div>
 
-            {/* Pagination controls */}
-            <div style={styles.pagination}>
-              {/* Previous page button */}
-              <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                style={styles.pageButton}
-              >
-                ‹
-              </button>
-
-              {/* Show up to 5 page buttons */}
+            <div style={s.pagination}>
+              <button onClick={() => handlePageChange(page - 1)} disabled={page === 1} style={s.pageBtn}>‹</button>
               {[...Array(totalPages).keys()].slice(0, 5).map((i) => {
                 const pg = i + 1;
                 return (
-                  <button
-                    key={pg}
-                    onClick={() => handlePageChange(pg)}
-                    style={{
-                      ...styles.pageButton,
-                      ...(pg === page ? styles.activePageButton : {}),
-                    }}
-                  >
-                    {pg}
-                  </button>
+                  <button key={pg} onClick={() => handlePageChange(pg)} style={pg === page ? s.pageBtnActive : s.pageBtn}>{pg}</button>
                 );
               })}
-
-              {/* Next page button */}
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-                style={styles.pageButton}
-              >
-                ›
-              </button>
+              <button onClick={() => handlePageChange(page + 1)} disabled={page === totalPages} style={s.pageBtn}>›</button>
             </div>
           </>
         )}
@@ -129,73 +81,62 @@ export default function Search() {
   );
 }
 
-
-const styles = {
-  wrapper: {
-    backgroundColor: "#0d0d0d",
-    minHeight: "100vh", 
+const s = {
+  page: {
+    background: "radial-gradient(ellipse at 15% 35%, rgba(88,80,220,0.15) 0%, transparent 55%), radial-gradient(ellipse at 85% 15%, rgba(56,189,248,0.08) 0%, transparent 45%), radial-gradient(ellipse at 55% 85%, rgba(192,132,252,0.1) 0%, transparent 50%), #07071a", minHeight: "100vh",
+    position: "relative", overflowX: "hidden",
+    fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+  },
+  gridOverlay: {
+    position: "fixed", inset: 0,
+    backgroundImage: `linear-gradient(rgba(88,80,220,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(88,80,220,0.05) 1px, transparent 1px)`,
+    backgroundSize: "40px 40px", pointerEvents: "none", zIndex: 0,
+  },
+  scanlines: {
+    position: "fixed", inset: 0,
+    background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px)",
+    pointerEvents: "none", zIndex: 1,
   },
   container: {
-    padding: "2rem",
-    fontFamily: "sans-serif",
-    color: "#fff",
-    position: "relative",
-    zIndex: 2,
-    maxWidth: "1200px",
-    margin: "0 auto", 
+    position: "relative", zIndex: 2, maxWidth: 1400,
+    margin: "0 auto", padding: "0 2rem 4rem", paddingTop: "8rem",
   },
-  heading: {
-    fontSize: "1.8rem",
-    marginBottom: "1.5rem",
-    textAlign: "center",
+  pageHeader: { display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "2.5rem", flexWrap: "wrap" },
+  accentBar: { width: 4, height: 28, borderRadius: 2, flexShrink: 0, background: "#38bdf8", boxShadow: "0 0 12px #38bdf8" },
+  pageTitle: {
+    fontSize: "0.9rem", fontWeight: 700, letterSpacing: "0.2em", margin: 0,
+    color: "#38bdf8", textShadow: "0 0 18px #38bdf8",
+    fontFamily: "'Orbitron', 'Share Tech Mono', monospace",
   },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-    gap: "1.5rem",
-  },
-  cardLink: {
-    textDecoration: "none",
-    color: "#fff",
-  },
-  card: {
-    backgroundColor: "#1f1f1f",
-    borderRadius: "8px",
-    padding: "0.75rem",
-    textAlign: "center",
-    boxShadow: "0 0 8px rgba(0, 0, 0, 0.5)",
-    transition: "transform 0.2s ease-in-out",
-  },
-  image: {
-    width: "100%",
-    borderRadius: "6px",
-    objectFit: "cover",
+  querySpan: { color: "#fff", textShadow: "none", letterSpacing: "0.05em" },
+  headerLine: { flex: 1, height: 1, opacity: 0.5, background: "linear-gradient(to right, rgba(56,189,248,0.4), transparent)" },
+  statusMsg: { textAlign: "center", padding: "4rem 2rem", color: "#444", letterSpacing: "0.2em", fontSize: "0.85rem" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))", gap: "2rem" },
+  cardLink: { textDecoration: "none", color: "inherit" },
+  card: { overflow: "hidden", cursor: "pointer", border: "1px solid rgba(56,189,248,0.12)", transition: "border-color 0.2s, box-shadow 0.2s" },
+  cardHover: { overflow: "hidden", cursor: "pointer", border: "1px solid rgba(56,189,248,0.5)", boxShadow: "0 0 20px rgba(56,189,248,0.1)", transition: "border-color 0.2s, box-shadow 0.2s" },
+  imageWrapper: { position: "relative", width: "100%", aspectRatio: "3 / 4" },
+  image: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
+  titleOverlay: {
+    position: "absolute", bottom: 0, width: "100%",
+    background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, transparent 100%)",
+    padding: "1.5rem 0.6rem 0.6rem",
   },
   title: {
-    fontSize: "0.95rem",
-    marginTop: "0.6rem",
-    color: "#fff",
+    fontSize: "0.72rem", margin: 0, color: "#ccc", letterSpacing: "0.04em", lineHeight: 1.3,
+    overflow: "hidden", textOverflow: "ellipsis",
+    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", whiteSpace: "normal",
   },
-  pagination: {
-    marginTop: "2rem",
-    display: "flex",
-    justifyContent: "center",
-    gap: "0.5rem",
+  pagination: { marginTop: "3rem", display: "flex", justifyContent: "center", gap: "0.4rem", flexWrap: "wrap" },
+  pageBtn: {
+    background: "transparent", color: "#555", border: "1px solid rgba(56,189,248,0.2)",
+    cursor: "pointer", minWidth: 38, height: 38, fontSize: "0.85rem", letterSpacing: "0.05em",
+    fontFamily: "'Share Tech Mono', monospace", transition: "all 0.2s",
   },
-  pageButton: {
-    padding: "0.5rem 1rem",
-    fontSize: "1rem",
-    backgroundColor: "#333",
-    color: "#fff",
-    border: "none",
-    borderRadius: "50%",
-    cursor: "pointer",
-    minWidth: "40px",
-    height: "40px",
-  },
-  activePageButton: {
-    backgroundColor: "#ffe08a",
-    color: "#000",
-    fontWeight: "bold",
+  pageBtnActive: {
+    background: "rgba(56,189,248,0.1)", color: "#38bdf8", border: "1px solid rgba(56,189,248,0.7)",
+    boxShadow: "0 0 12px rgba(56,189,248,0.2)", cursor: "pointer", minWidth: 38, height: 38,
+    fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em",
+    fontFamily: "'Share Tech Mono', monospace", transition: "all 0.2s",
   },
 };

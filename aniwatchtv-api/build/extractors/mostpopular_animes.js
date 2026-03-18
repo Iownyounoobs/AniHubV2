@@ -6,24 +6,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractMostPopularAnimes = void 0;
 const http_errors_1 = __importDefault(require("http-errors"));
 const axios_1 = require("axios");
-const extractMostPopularAnimes = ($, selectors) => {
+const extractMostPopularAnimes = ($, selector) => {
     var _a, _b;
     try {
         const animes = [];
-        $(selectors).each((_index, element) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
-            const animeID = ((_b = (_a = $(element)
-                .find(".film-detail .dynamic-name")) === null || _a === void 0 ? void 0 : _a.attr("href")) === null || _b === void 0 ? void 0 : _b.slice(1).trim()) || null;
-            const animeNAME = (_e = (_d = (_c = $(element).find(".film-detail .dynamic-name")) === null || _c === void 0 ? void 0 : _c.text()) === null || _d === void 0 ? void 0 : _d.trim()) !== null && _e !== void 0 ? _e : "UNKNOWN ANIME";
-            const animeIMG = ((_g = (_f = $(element)
-                .find(".film-poster .film-poster-img")) === null || _f === void 0 ? void 0 : _f.attr("data-src")) === null || _g === void 0 ? void 0 : _g.trim()) || null;
-            const epSUB = Number((_j = (_h = $(element)
-                .find(".fd-infor .tick .tick-item.tick-sub")) === null || _h === void 0 ? void 0 : _h.text()) === null || _j === void 0 ? void 0 : _j.trim()) || null;
-            const epDUB = Number((_l = (_k = $(element)
-                .find(".fd-infor .tick .tick-item.tick-dub")) === null || _k === void 0 ? void 0 : _k.text()) === null || _l === void 0 ? void 0 : _l.trim()) || null;
-            const total_eps = Number((_o = (_m = $(element)
-                .find(".fd-infor .tick .tick-item.tick-eps")) === null || _m === void 0 ? void 0 : _m.text()) === null || _o === void 0 ? void 0 : _o.trim()) || null;
-            const animeTYPE = ((_u = (_t = (_s = (_r = (_q = (_p = $(selectors)) === null || _p === void 0 ? void 0 : _p.find(".fd-infor .tick")) === null || _q === void 0 ? void 0 : _q.text()) === null || _r === void 0 ? void 0 : _r.trim()) === null || _s === void 0 ? void 0 : _s.replace(/[\s\n]+/g, " ")) === null || _t === void 0 ? void 0 : _t.split(" ")) === null || _u === void 0 ? void 0 : _u.pop()) || null;
+        $(selector).each((_index, element) => {
+            var _a, _b, _c, _d, _e, _f, _g;
+            const $el = $(element);
+            const detailEl = $el.find(".film-detail .dynamic-name");
+            const posterEl = $el.find(".film-poster .film-poster-img");
+            const infoEl = $el.find(".fd-infor");
+            const animeID = ((_a = detailEl.attr("href")) === null || _a === void 0 ? void 0 : _a.slice(1).trim()) || null;
+            const animeNAME = ((_b = detailEl.text()) === null || _b === void 0 ? void 0 : _b.trim()) || "UNKNOWN ANIME";
+            const animeIMG = ((_c = posterEl.attr("data-src")) === null || _c === void 0 ? void 0 : _c.trim()) || null;
+            const epSUB = Number(infoEl.find(".tick-item.tick-sub").text().trim()) || null;
+            const epDUB = Number(infoEl.find(".tick-item.tick-dub").text().trim()) || null;
+            const total_eps = Number(infoEl.find(".tick-item.tick-eps").text().trim()) || null;
+            const animeTYPE = ((_g = (_f = (_e = (_d = infoEl
+                .find(".tick")
+                .text()) === null || _d === void 0 ? void 0 : _d.replace(/[\s\n]+/g, " ")) === null || _e === void 0 ? void 0 : _e.trim()) === null || _f === void 0 ? void 0 : _f.split(" ")) === null || _g === void 0 ? void 0 : _g.pop()) || null;
             animes.push({
                 id: animeID,
                 name: animeNAME,
@@ -39,15 +40,11 @@ const extractMostPopularAnimes = ($, selectors) => {
         return animes;
     }
     catch (err) {
-        ////////////////////////////////////////////////////////////////
-        console.error("Error in extract_mostpopular_animes :", err); // for TESTING//
-        ////////////////////////////////////////////////////////////////
+        console.error("Error in extractMostPopularAnimes:", err);
         if (err instanceof axios_1.AxiosError) {
-            throw (0, http_errors_1.default)(((_a = err === null || err === void 0 ? void 0 : err.response) === null || _a === void 0 ? void 0 : _a.status) || 500, ((_b = err === null || err === void 0 ? void 0 : err.response) === null || _b === void 0 ? void 0 : _b.statusText) || "Something went wrong");
+            throw (0, http_errors_1.default)(((_a = err.response) === null || _a === void 0 ? void 0 : _a.status) || 500, ((_b = err.response) === null || _b === void 0 ? void 0 : _b.statusText) || "Something went wrong");
         }
-        else {
-            throw http_errors_1.default.InternalServerError("Internal server error");
-        }
+        throw http_errors_1.default.InternalServerError("Internal server error");
     }
 };
 exports.extractMostPopularAnimes = extractMostPopularAnimes;
