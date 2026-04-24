@@ -69,6 +69,11 @@ export const fetchHtml = async (url: string, referer?: string): Promise<string> 
     await page.setUserAgent(UA);
     if (referer) await page.setExtraHTTPHeaders({ Referer: referer });
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    // Wait for Cloudflare "Just a moment..." challenge to auto-solve
+    await page.waitForFunction(
+      () => document.title !== "Just a moment...",
+      { timeout: 15000 }
+    ).catch(() => {});
     await new Promise((r) => setTimeout(r, 1500));
     const html = await page.content();
     cache.set(url, { html, expiry: Date.now() + CACHE_TTL_MS });
