@@ -13,6 +13,9 @@ const PORT = process.env.PORT ?? 3001;
 // Trust Railway/Vercel proxy so rate-limiter reads the real client IP
 app.set("trust proxy", 1);
 
+// Disable ETags so browsers never cache API responses as 304s
+app.set("etag", false);
+
 // Security headers
 app.use(helmet());
 
