@@ -16,8 +16,9 @@ export default function Genre() {
     setLoading(true);
     setAnimes([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    const API = process.env.REACT_APP_API_URL;
     axios
-      .get(`http://localhost:3001/aniwatchtv/genre/${encodeURIComponent(genre.toLowerCase())}?page=${page}`)
+      .get(`${API}/aniwatchtv/genre/${encodeURIComponent(genre.toLowerCase())}?page=${page}`)
       .then(res => {
         setAnimes(res.data.animes || []);
         setTotalPages(res.data.totalPages || 1);

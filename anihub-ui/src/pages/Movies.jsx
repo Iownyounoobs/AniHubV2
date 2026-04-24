@@ -17,8 +17,9 @@ export default function Movies() {
 
   useEffect(() => {
     setLoading(true);
+    const API = process.env.REACT_APP_API_URL;
     axios
-      .get(`http://localhost:3001/aniwatchtv/movie?page=${pageParam}`)
+      .get(`${API}/aniwatchtv/movie?page=${pageParam}`)
       .then((res) => {
         setMovies(res.data.animes || []);
         setTotalPages(res.data.totalPages || 1);

@@ -31,7 +31,8 @@ export default function WatchEpisode() {
           return;
         }
 
-        const url = `http://localhost:3001/aniwatchtv/episode-srcs?id=${episodeId}?ep=${epId}&server=MegaCloud&category=sub`;
+        const API = process.env.REACT_APP_API_URL;
+        const url = `${API}/aniwatchtv/episode-srcs?id=${episodeId}?ep=${epId}&server=MegaCloud&category=sub`;
         const res = await axios.get(url);
         if (res.data?.embedUrl) setEmbedUrl(res.data.embedUrl);
       } catch (err) {

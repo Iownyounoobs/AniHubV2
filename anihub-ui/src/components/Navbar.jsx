@@ -111,9 +111,8 @@ export default function Navbar() {
               <div style={s.dropdown}>
                 <div style={s.dropdownHeader}>// USER MENU</div>
                 {[
-                  { label: "VIEW PROFILE",      path: "/profile" },
-                  { label: "ACCOUNT SETTINGS",  path: "/change-account" },
-                  { label: "SUBSCRIBE",         path: "/subscribe" },
+                  { label: "VIEW PROFILE",     path: "/profile" },
+                  { label: "ACCOUNT SETTINGS", path: "/change-account" },
                 ].map(({ label, path }) => (
                   <button
                     key={path}

@@ -19,21 +19,33 @@ const scrapeAnimeCategories_1 = require("../scrapers/scrapeAnimeCategories");
  * GET /aniwatchtv/category/:category?page=1
  * Scrapes and returns anime category page results.
  */
+const ALLOWED_CATEGORIES = new Set([
+    "top-airing", "most-popular", "most-favorite", "latest-completed",
+    "recently-added", "recently-updated", "top-upcoming", "tv", "movie",
+    "ova", "ona", "special", "subbed-anime", "dubbed-anime",
+]);
 const getCategoryPageInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const category = req.params.category;
-        const page = req.query.page
-            ? Number(decodeURIComponent(req.query.page))
-            : 1;
+        const category = (_a = req.params.category) === null || _a === void 0 ? void 0 : _a.toLowerCase().trim();
+        const page = Math.max(1, Math.min(100, Number(req.query.page) || 1));
         if (!category) {
             throw http_errors_1.default.BadRequest("Category parameter is required.");
+        }
+        if (!ALLOWED_CATEGORIES.has(category)) {
+            throw http_errors_1.default.BadRequest("Invalid category.");
         }
         const data = yield (0, scrapeAnimeCategories_1.scrapeAnimeCategories)(category, page);
         res.status(200).json(data);
     }
     catch (error) {
         console.error("Error in getCategoryPageInfo:", error);
-        res.status(500).json({ error: "Failed to fetch category page" });
+        if (http_errors_1.default.isHttpError(error)) {
+            res.status(error.status).json({ error: error.message });
+        }
+        else {
+            res.status(500).json({ error: "Failed to fetch category page" });
+        }
     }
 });
 exports.getCategoryPageInfo = getCategoryPageInfo;

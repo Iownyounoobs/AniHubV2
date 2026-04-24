@@ -19,8 +19,9 @@ export default function Search() {
   useEffect(() => {
     if (!query) return;
     setLoading(true);
+    const API = process.env.REACT_APP_API_URL;
     axios
-      .get(`http://localhost:3001/aniwatchtv/search?keyword=${encodeURIComponent(query)}&page=${page}`)
+      .get(`${API}/aniwatchtv/search?keyword=${encodeURIComponent(query)}&page=${page}`)
       .then((res) => {
         setResults(res.data.animes || []);
         setTotalPages(res.data.totalPages || 1);

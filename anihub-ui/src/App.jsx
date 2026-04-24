@@ -7,15 +7,13 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Movies from "./pages/Movies";
-import LatestEpisodes from "./pages/LatestEpisodes"; 
+import LatestEpisodes from "./pages/LatestEpisodes";
 import OriginAnime from "./pages/OriginAnime";
 import MyList from "./pages/MyList";
 import WatchEpisode from "./pages/WatchEpisode";
 import AnimeDetails from "./pages/AnimeDetails";
 import Profile from "./pages/Profile";
 import ChangeAccount from "./pages/ChangeAccount";
-import Subscribe from "./pages/Subscribe";
-import Subscribed from "./pages/Subscribed";
 import Genre from "./pages/Genre";
 
 // Route Guards
@@ -43,9 +41,6 @@ export default function App() {
             </PublicRoute>
           }
         />
-        <Route path="/subscribe" element={<Subscribe />} />
-        <Route path="/subscribed" element={<Subscribed />} />
-
         <Route
           path="/change-account"
           element={

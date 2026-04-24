@@ -36,7 +36,8 @@ export default function Subscribe() {
     const user = getAuth().currentUser;
     if (!user) return alert("Please log in first");
     try {
-      const res = await axios.post("http://localhost:3002/create-checkout-session", {
+      const STRIPE = process.env.REACT_APP_STRIPE_URL;
+      const res = await axios.post(`${STRIPE}/create-checkout-session`, {
         uid: user.uid, plan,
       });
       window.location.href = res.data.url;

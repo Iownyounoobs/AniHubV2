@@ -22,7 +22,8 @@ export default function LatestEpisodes() {
       try {
         setLoading(true);
         setError("");
-        const res = await axios.get(`http://localhost:3001/aniwatchtv/latest?page=${pageParam}`);
+        const API = process.env.REACT_APP_API_URL;
+        const res = await axios.get(`${API}/aniwatchtv/latest?page=${pageParam}`);
         const { latestEpisodes = [], totalPages = 1 } = res.data;
         setEpisodes(latestEpisodes);
         setTotalPages(totalPages);

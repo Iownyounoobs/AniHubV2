@@ -27,15 +27,30 @@ export default function ChangeAccount() {
     setMessage(null);
     setError(null);
     try {
-      if (newUsername) await updateProfile(user, { displayName: newUsername });
+      if (newUsername) {
+        if (newUsername.length > 50) throw new Error("Username must be 50 characters or less.");
+        await updateProfile(user, { displayName: newUsername.trim() });
+      }
       if (newPassword) {
         if (!currentPassword) throw new Error("Enter your current password to change it.");
+        if (newPassword.length < 8) throw new Error("New password must be at least 8 characters.");
         await reauthenticateUser(user, currentPassword);
         await updatePassword(user, newPassword);
       }
       setMessage("Account updated successfully.");
     } catch (err) {
-      setError(err.message || "Failed to update account.");
+      const code = err.code || "";
+      if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+        setError("Current password is incorrect.");
+      } else if (code === "auth/weak-password") {
+        setError("New password is too weak. Use at least 8 characters.");
+      } else if (code === "auth/requires-recent-login") {
+        setError("Session expired. Please log out and log back in, then try again.");
+      } else if (err.message && !code) {
+        setError(err.message);
+      } else {
+        setError("Failed to update account. Please try again.");
+      }
     }
   };
 

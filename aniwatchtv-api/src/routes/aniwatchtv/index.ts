@@ -51,7 +51,7 @@ aniwatchRouter.get("/img", imgProxyHandler);
 // Chinese donghua — studio-filtered list
 aniwatchRouter.get("/donghua", async (req: Request, res: Response) => {
   try {
-    const page = req.query.page ? Number(req.query.page) : 1;
+    const page = Math.max(1, Math.min(100, Number(req.query.page) || 1));
     const data = await scrapeChineseDonghua(page);
     res.status(200).json(data);
   } catch (err) {
@@ -59,12 +59,19 @@ aniwatchRouter.get("/donghua", async (req: Request, res: Response) => {
   }
 });
 
+// Only allow safe slug characters — prevents path traversal
+const SLUG_RE = /^[a-z0-9-]+$/;
+
 // Genre pages like /genre/action
 aniwatchRouter.get("/genre/:genre", async (req: Request, res: Response) => {
+  const genre = req.params.genre.toLowerCase();
+  if (!SLUG_RE.test(genre)) {
+    res.status(400).json({ error: "Invalid genre." });
+    return;
+  }
   try {
-    const category = `genre/${req.params.genre.toLowerCase()}`;
-    const page = req.query.page ? Number(req.query.page) : 1;
-    const data = await scrapeAnimeCategories(category, page);
+    const page = Math.max(1, Math.min(100, Number(req.query.page) || 1));
+    const data = await scrapeAnimeCategories(`genre/${genre}`, page);
     res.status(200).json(data);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch genre" });
@@ -73,10 +80,14 @@ aniwatchRouter.get("/genre/:genre", async (req: Request, res: Response) => {
 
 // Two-segment category paths like /subtype/chinese
 aniwatchRouter.get("/subtype/:subtype", async (req: Request, res: Response) => {
+  const subtype = req.params.subtype.toLowerCase();
+  if (!SLUG_RE.test(subtype)) {
+    res.status(400).json({ error: "Invalid subtype." });
+    return;
+  }
   try {
-    const category = `subtype/${req.params.subtype}`;
-    const page = req.query.page ? Number(req.query.page) : 1;
-    const data = await scrapeAnimeCategories(category, page);
+    const page = Math.max(1, Math.min(100, Number(req.query.page) || 1));
+    const data = await scrapeAnimeCategories(`subtype/${subtype}`, page);
     res.status(200).json(data);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch subtype category" });

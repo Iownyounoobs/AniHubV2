@@ -6,23 +6,49 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const helmet_1 = __importDefault(require("helmet"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = require("dotenv");
 const routes_1 = __importDefault(require("./routes"));
-// This reads “.env” and merges its contents into process.env
 (0, dotenv_1.config)();
-// Create the main Express application which is the server.
 const app = (0, express_1.default)();
-// Define the port to listen on (from .env or fallback to 3001)
 const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3001;
-// Enable CORS so that frontend apps (like React) can access this API allowing cross-origin requests
-app.use((0, cors_1.default)());
-// Enable parsing of incoming JSON request bodies (POST /login with JSON data)
-app.use(express_1.default.json());
-// Any request that starts with "/" will be passed to the router.
-// For example: if someone visits /health or /aniwatchtv/search,
-// Express will send that request to the router.
-// Then the router checks if any of its defined routes match,
-// and if it finds a match, it runs the corresponding function.
+// Security headers
+app.use((0, helmet_1.default)());
+// CORS — only allow the configured frontend origin
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
+    .split(",")
+    .map((o) => o.trim());
+app.use((0, cors_1.default)({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    methods: ["GET"],
+    optionsSuccessStatus: 200,
+}));
+// Request size limit
+app.use(express_1.default.json({ limit: "50kb" }));
+// General rate limit: 120 req / minute per IP
+app.use((0, express_rate_limit_1.default)({
+    windowMs: 60 * 1000,
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many requests, please slow down." },
+}));
+// Tighter limit on search to prevent scraping abuse: 30 req / minute
+app.use("/aniwatchtv/search", (0, express_rate_limit_1.default)({
+    windowMs: 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Search rate limit exceeded." },
+}));
 app.use("/", routes_1.default);
 app.listen(PORT, () => {
     console.log(`API is running on http://localhost:${PORT}`);

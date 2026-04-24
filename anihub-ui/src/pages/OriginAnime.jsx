@@ -4,9 +4,10 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import Card from "../components/Card";
 
+const API_BASE = process.env.REACT_APP_API_URL || "";
 const proxyImg = (url) =>
   url?.includes("flawlessfiles.com")
-    ? `http://localhost:3001/aniwatchtv/img?url=${encodeURIComponent(url)}`
+    ? `${API_BASE}/aniwatchtv/img?url=${encodeURIComponent(url)}`
     : url;
 
 export default function OriginAnime() {
@@ -27,7 +28,7 @@ export default function OriginAnime() {
     setLoading(true);
     setAnimeList([]);
     axios
-      .get(`http://localhost:3001/aniwatchtv/${categorySlug}?page=${pageParam}`)
+      .get(`${API_BASE}/aniwatchtv/${categorySlug}?page=${pageParam}`)
       .then((res) => {
         setAnimeList(res.data.animes || []);
         setTotalPages(res.data.totalPages || 1);

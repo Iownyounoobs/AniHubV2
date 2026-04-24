@@ -16,9 +16,10 @@ export default function AnimeDetails() {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const [detailsRes, episodesRes] = await Promise.all([
-          axios.get(`http://localhost:3001/aniwatchtv/anime/${animeId}`),
-          axios.get(`http://localhost:3001/aniwatchtv/episodes/${animeId}`),
+        const API = process.env.REACT_APP_API_URL;
+      const [detailsRes, episodesRes] = await Promise.all([
+          axios.get(`${API}/aniwatchtv/anime/${animeId}`),
+          axios.get(`${API}/aniwatchtv/episodes/${animeId}`),
         ]);
         setAnimeDetails(detailsRes.data);
         setEpisodes(episodesRes.data.episodes || []);

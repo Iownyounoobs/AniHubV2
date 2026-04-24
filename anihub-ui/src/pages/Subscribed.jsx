@@ -8,26 +8,34 @@ export default function Subscribed() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const plan = searchParams.get("plan") || "monthly";
+  const sessionId = searchParams.get("session_id");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!sessionId) {
+      navigate("/subscribe", { replace: true });
+      return;
+    }
     const auth = getAuth();
+    const STRIPE = process.env.REACT_APP_STRIPE_URL;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) { setLoading(false); return; }
       try {
         const token = await user.getIdToken();
         await axios.post(
-          "http://localhost:3002/mark-premium",
-          { uid: user.uid, plan },
+          `${STRIPE}/mark-premium`,
+          { uid: user.uid, plan, sessionId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } catch (err) {
         console.error("Failed to mark user as premium:", err.response?.data || err.message);
+        setError("There was an issue activating your subscription. Please contact support.");
       }
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [plan]);
+  }, [plan, sessionId, navigate]);
 
   if (loading) {
     return (
@@ -57,10 +65,14 @@ export default function Subscribed() {
           </div>
           <h1 style={s.title}>PREMIUM ACTIVATED</h1>
           <div style={s.titleGlow} />
-          <p style={s.subtitle}>
-            Welcome to AniHub Premium. You now have full access to exclusive episodes,
-            high-quality streams, and all premium perks.
-          </p>
+          {error ? (
+            <p style={{ ...s.subtitle, color: "#f87171" }}>{error}</p>
+          ) : (
+            <p style={s.subtitle}>
+              Welcome to AniHub Premium. You now have full access to exclusive episodes,
+              high-quality streams, and all premium perks.
+            </p>
+          )}
           <div style={s.planBadge}>
             <span style={s.planLabel}>PLAN</span>
             <span style={s.planValue}>{plan.toUpperCase()}</span>

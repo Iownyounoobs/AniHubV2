@@ -23,9 +23,8 @@ export default function Signup() {
     setLoading(true);
     try {
       const { user } = await createUserWithEmailAndPassword(firebaseAuth, email, password);
-      await setDoc(doc(firestore, "users", user.uid), { email: user.email, isPremium: false });
-      sessionStorage.setItem("anihub_new_user", "1");
-      setTimeout(() => { setLoading(false); navigate("/subscribe"); }, 2000);
+      await setDoc(doc(firestore, "users", user.uid), { email: user.email });
+      setTimeout(() => { setLoading(false); navigate("/home"); }, 2000);
     } catch (err) {
       console.error("Signup failed:", err.message);
       setError("Signup failed. Try a different email.");
