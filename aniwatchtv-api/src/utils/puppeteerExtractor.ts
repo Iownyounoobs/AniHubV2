@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import { BASE_URL } from "./aniwatchtvRoutes";
 
 puppeteer.use(StealthPlugin());
 
@@ -27,8 +28,8 @@ export async function extractM3U8WithPuppeteer(embedUrl: string): Promise<string
     );
 
     await page.setExtraHTTPHeaders({
-      Referer: "https://aniwatchtv.to/",
-      Origin: "https://aniwatchtv.to",
+      Referer: `${BASE_URL}/`,
+      Origin: BASE_URL,
     });
 
     let m3u8Url: string | null = null;
@@ -44,9 +45,8 @@ export async function extractM3U8WithPuppeteer(embedUrl: string): Promise<string
       req.continue();
     });
 
-    // Navigate from aniwatchtv.to first so document.referrer is set correctly
-    // The player script checks document.referrer to validate the embedding site
-    await page.goto("https://aniwatchtv.to/", { waitUntil: "domcontentloaded", timeout: 15000 }).catch(() => {});
+    // Navigate from base site first so document.referrer is set correctly
+    await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded", timeout: 15000 }).catch(() => {});
     await page.goto(embedUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
 
     // Wait for JWPlayer script to finish executing

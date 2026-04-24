@@ -11,6 +11,7 @@ export type AniWatchUrls = {
 const FALLBACK_URLS: string[] = (process.env.ANIWATCH_BASE_URL
   ? [process.env.ANIWATCH_BASE_URL]
   : [
+      "https://animetube.net",
       "https://hianime.to",
       "https://aniwatchtv.to",
       "https://aniwatchtv.com.ro",
