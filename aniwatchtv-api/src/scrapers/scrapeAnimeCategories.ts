@@ -34,6 +34,7 @@ export const scrapeAnimeCategories = async (
       : `${BASE}/${fixedCategory}?page=${page}`;
 
     const html = await fetchHtml(url, BASE);
+    console.log("[DEBUG] HTML preview:", html.slice(0, 600));
     const $: CheerioAPI = load(html);
 
     const animeSelector: SelectorType =
