@@ -20,7 +20,7 @@ export default class ErrorBoundary extends React.Component {
         <div style={s.page}>
           <div style={s.gridOverlay} />
           <div style={s.wrap}>
-            <p style={s.code}>// ERROR</p>
+            <p style={s.code}>{"// ERROR"}</p>
             <h1 style={s.title}>Something went wrong.</h1>
             <p style={s.sub}>An unexpected error occurred. Please refresh the page.</p>
             <button style={s.btn} onClick={() => window.location.reload()}>

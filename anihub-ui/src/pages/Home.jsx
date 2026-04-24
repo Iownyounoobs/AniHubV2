@@ -30,9 +30,9 @@ export default function Home() {
 
     // Fetch 3 pages of top-airing for trending (~120 items)
     Promise.all([
-      axios.get("${API}/aniwatchtv/top-airing?page=1"),
-      axios.get("${API}/aniwatchtv/top-airing?page=2"),
-      axios.get("${API}/aniwatchtv/top-airing?page=3"),
+      axios.get(`${API}/aniwatchtv/top-airing?page=1`),
+      axios.get(`${API}/aniwatchtv/top-airing?page=2`),
+      axios.get(`${API}/aniwatchtv/top-airing?page=3`),
     ]).then(([p1, p2, p3]) => {
       const combined = [...(p1.data.animes||[]), ...(p2.data.animes||[]), ...(p3.data.animes||[])];
       const seen = new Set();
@@ -41,8 +41,8 @@ export default function Home() {
 
     // Fetch 2 pages of top-upcoming (~80 items)
     Promise.all([
-      axios.get("${API}/aniwatchtv/top-upcoming?page=1"),
-      axios.get("${API}/aniwatchtv/top-upcoming?page=2"),
+      axios.get(`${API}/aniwatchtv/top-upcoming?page=1`),
+      axios.get(`${API}/aniwatchtv/top-upcoming?page=2`),
     ]).then(([p1, p2]) => {
       const combined = [...(p1.data.animes||[]), ...(p2.data.animes||[])];
       const seen = new Set();
@@ -51,25 +51,24 @@ export default function Home() {
 
     // Fetch 3 pages of latest episodes (~72 items)
     Promise.all([
-      axios.get("${API}/aniwatchtv/tv?page=1"),
-      axios.get("${API}/aniwatchtv/tv?page=2"),
-      axios.get("${API}/aniwatchtv/tv?page=3"),
+      axios.get(`${API}/aniwatchtv/tv?page=1`),
+      axios.get(`${API}/aniwatchtv/tv?page=2`),
+      axios.get(`${API}/aniwatchtv/tv?page=3`),
     ]).then(([p1, p2, p3]) => {
       const combined = [
         ...(p1.data.animes || []),
         ...(p2.data.animes || []),
         ...(p3.data.animes || []),
       ];
-      // dedupe by id
       const seen = new Set();
       setLatest(combined.filter(a => a.id && !seen.has(a.id) && seen.add(a.id)));
     }).catch(err => console.error("Latest fetch failed:", err.message));
 
     // Fetch 3 pages of most popular (~72 items)
     Promise.all([
-      axios.get("${API}/aniwatchtv/most-popular?page=1"),
-      axios.get("${API}/aniwatchtv/most-popular?page=2"),
-      axios.get("${API}/aniwatchtv/most-popular?page=3"),
+      axios.get(`${API}/aniwatchtv/most-popular?page=1`),
+      axios.get(`${API}/aniwatchtv/most-popular?page=2`),
+      axios.get(`${API}/aniwatchtv/most-popular?page=3`),
     ]).then(([p1, p2, p3]) => {
       const combined = [
         ...(p1.data.animes || []),
@@ -82,8 +81,8 @@ export default function Home() {
 
     // Fetch 2 pages of most favorite (~48 items)
     Promise.all([
-      axios.get("${API}/aniwatchtv/most-favorite?page=1"),
-      axios.get("${API}/aniwatchtv/most-favorite?page=2"),
+      axios.get(`${API}/aniwatchtv/most-favorite?page=1`),
+      axios.get(`${API}/aniwatchtv/most-favorite?page=2`),
     ]).then(([p1, p2]) => {
       const combined = [...(p1.data.animes || []), ...(p2.data.animes || [])];
       const seen = new Set();

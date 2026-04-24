@@ -38,7 +38,7 @@ export default function MyList() {
           <div style={s.statusMsg}>LOADING YOUR LIST...</div>
         ) : animeList.length === 0 ? (
           <div style={s.emptyWrap}>
-            <p style={s.emptyTitle}>// NO ENTRIES FOUND</p>
+            <p style={s.emptyTitle}>{"// NO ENTRIES FOUND"}</p>
             <p style={s.emptySubtitle}>Browse anime and add your favorites to see them here.</p>
           </div>
         ) : (

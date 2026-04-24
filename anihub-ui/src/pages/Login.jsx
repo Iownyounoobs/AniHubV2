@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { firebaseAuth } from "../utils/firebase-config";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [formValues, setFormValues] = useState({ email: "", password: "" });

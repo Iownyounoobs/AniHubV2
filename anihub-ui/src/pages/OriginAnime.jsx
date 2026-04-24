@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams, Link } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Card from "../components/Card";
 
-const API_BASE = process.env.REACT_APP_API_URL || "";
-const proxyImg = (url) =>
-  url?.includes("flawlessfiles.com")
-    ? `${API_BASE}/aniwatchtv/img?url=${encodeURIComponent(url)}`
-    : url;
 
 export default function OriginAnime() {
   const { country } = useParams();

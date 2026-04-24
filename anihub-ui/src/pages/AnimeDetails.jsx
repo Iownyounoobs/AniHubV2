@@ -272,7 +272,6 @@ function SectionHead({ color, title, count }) {
 
 /* ── Styles ── */
 const cyan  = "#38bdf8";
-const pink  = "#c084fc";
 const font  = "'Orbitron','Share Tech Mono',monospace";
 const mono  = "'Share Tech Mono','Courier New',monospace";
 

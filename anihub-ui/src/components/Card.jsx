@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { IoPlayCircleSharp } from "react-icons/io5";
-import { AiOutlinePlus, AiOutlineCheck, AiOutlineBell, AiOutlineCheck as AiCheck } from "react-icons/ai";
+import { AiOutlinePlus, AiOutlineCheck, AiOutlineBell } from "react-icons/ai";
 import { MdClose } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { addToMyList, removeFromMyList, isInMyList } from "../utils/firestoreUtils";

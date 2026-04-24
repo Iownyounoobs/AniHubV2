@@ -109,7 +109,7 @@ export default function Navbar() {
 
             {dropdownOpen && (
               <div style={s.dropdown}>
-                <div style={s.dropdownHeader}>// USER MENU</div>
+                <div style={s.dropdownHeader}>{"// USER MENU"}</div>
                 {[
                   { label: "VIEW PROFILE",     path: "/profile" },
                   { label: "ACCOUNT SETTINGS", path: "/change-account" },
