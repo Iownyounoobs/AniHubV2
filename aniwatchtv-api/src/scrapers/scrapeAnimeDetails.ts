@@ -1,6 +1,5 @@
 import { getAniWatchTVUrls } from "../utils/aniwatchtvRoutes";
-import { headers } from "../config/headers";
-import axios, { AxiosError } from "axios";
+import { fetchHtml } from "../utils/browser";
 import { load, type CheerioAPI } from "cheerio";
 import createHttpError from "http-errors";
 
@@ -27,11 +26,7 @@ export const scrapeAnimeDetails = async (
     name: "UNKNOWN ANIME",
     img: null,
     rating: null,
-    episodes: {
-      eps: null,
-      sub: null,
-      dub: null,
-    },
+    episodes: { eps: null, sub: null, dub: null },
     category: null,
     quality: null,
     duration: null,
@@ -51,11 +46,8 @@ export const scrapeAnimeDetails = async (
     const { BASE } = await getAniWatchTVUrls();
     const url = new URL(id, BASE).toString();
 
-    const response = await axios.get(url, {
-      headers: headers,
-    });
-
-    const $: CheerioAPI = load(response.data);
+    const html = await fetchHtml(url, BASE);
+    const $: CheerioAPI = load(html);
 
     result.info = extractAnimeDetails($, "#ani_detail .container .anis-content");
     result.moreInfo = extractExtraAboutInfo($, "#ani_detail .container .anis-content .anisc-info");
@@ -74,27 +66,12 @@ export const scrapeAnimeDetails = async (
     );
 
     const studiosRaw = result.moreInfo["Studios:"];
-    const studios =
-      typeof studiosRaw === "string"
-        ? studiosRaw.split(",").map((s) => s.trim())
-        : [];
-
+    const studios = typeof studiosRaw === "string" ? studiosRaw.split(",").map((s) => s.trim()) : [];
     result.origin = detectCountry(studios);
-
-    console.log("Studios:", studios);
-    console.log("Detected Origin:", result.origin);
 
     return result;
   } catch (err) {
     console.error("Error in scrapeAnimeDetails:", err);
-
-    if (err instanceof AxiosError) {
-      throw createHttpError(
-        err?.response?.status || 500,
-        err?.response?.statusText || "Something went wrong"
-      );
-    }
-
     throw createHttpError.InternalServerError("Internal server error");
   }
 };

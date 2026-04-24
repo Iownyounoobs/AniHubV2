@@ -1,9 +1,7 @@
-import axios, { AxiosError } from "axios";
 import { load, type CheerioAPI, type SelectorType } from "cheerio";
 import createHttpError, { type HttpError } from "http-errors";
 
-import { headers } from "../config/headers";
-
+import { fetchHtml } from "../utils/browser";
 import {
   extractTrendingAnimes,
   extractLatestEpisodes,
@@ -14,23 +12,15 @@ import {
   extractTop10Animes,
 } from "../extractors";
 
-import {
-  ScrapedHomePage,
-  Top10AnimeTimePeriod,
-} from "../types/animeTypes";
-
-import { getAniWatchTVUrls } from "../utils/aniwatchtvRoutes"; 
+import { ScrapedHomePage, Top10AnimeTimePeriod } from "../types/animeTypes";
+import { getAniWatchTVUrls } from "../utils/aniwatchtvRoutes";
 
 export const scrapeHomePage = async (): Promise<ScrapedHomePage | HttpError> => {
   const result: ScrapedHomePage = {
     spotLightAnimes: [],
     trendingAnimes: [],
     latestEpisodes: [],
-    top10Animes: {
-      day: [],
-      week: [],
-      month: [],
-    },
+    top10Animes: { day: [], week: [], month: [] },
     featuredAnimes: {
       topAiringAnimes: [],
       mostPopularAnimes: [],
@@ -41,18 +31,10 @@ export const scrapeHomePage = async (): Promise<ScrapedHomePage | HttpError> => 
     genres: [],
   };
 
-  const URLs = await getAniWatchTVUrls();
-
   try {
-    const mainPage = await axios.get(URLs.HOME, {
-      headers: {
-        "User-Agent": headers.USER_AGENT_HEADER,
-        Accept: headers.ACCEPT_HEADER,
-        "Accept-Encoding": headers.ACCEPT_ENCODEING_HEADER,
-      },
-    });
-
-    const $: CheerioAPI = load(mainPage.data);
+    const URLs = await getAniWatchTVUrls();
+    const html = await fetchHtml(URLs.HOME, URLs.BASE);
+    const $: CheerioAPI = load(html);
 
     const trendingAnimeSelectors: SelectorType = "#anime-trending #trending-home .swiper-wrapper .swiper-slide";
     const latestEpisodesSelectors: SelectorType = "#main-content .block_area_home:nth-of-type(1) .tab-content .film_list-wrap .flw-item";
@@ -85,13 +67,6 @@ export const scrapeHomePage = async (): Promise<ScrapedHomePage | HttpError> => 
     return result;
   } catch (err) {
     console.error("Error in scrapeHomePage:", err);
-    if (err instanceof AxiosError) {
-      throw createHttpError(
-        err?.response?.status || 500,
-        err?.response?.statusText || "Something went wrong"
-      );
-    } else {
-      throw createHttpError.InternalServerError("Internal server error");
-    }
+    throw createHttpError.InternalServerError("Internal server error");
   }
 };
