@@ -13,6 +13,7 @@ const FALLBACK_URLS: string[] = (process.env.ANIWATCH_BASE_URL
   : [
       "https://hianime.to",
       "https://aniwatchtv.to",
+      "https://aniwatchtv.com.ro",
       "https://aniwatch.to",
     ]
 );
