@@ -1,5 +1,3 @@
-import { isSiteReachable } from "./isSiteReachable";
-
 export type AniWatchUrls = {
   BASE: string;
   HOME: string;
@@ -8,8 +6,7 @@ export type AniWatchUrls = {
   AJAX: string;
 };
 
-// Hardcoded base URL (you can adjust if needed)
-const BASE_URL = "https://aniwatchtv.to";
+const BASE_URL = process.env.ANIWATCH_BASE_URL || "https://hianime.to";
 
 // Constructs full AniWatch route paths
 const buildAniWatchTVUrls = (baseUrl: string): AniWatchUrls => ({
@@ -22,17 +19,8 @@ const buildAniWatchTVUrls = (baseUrl: string): AniWatchUrls => ({
 
 
 
-// Validates base URL reachability and returns full route set
 const getAniWatchTVUrls = async (): Promise<AniWatchUrls> => {
-  try {
-    const reachable = await isSiteReachable(BASE_URL);
-    if (!reachable) throw new Error("AniWatch base URL is not reachable");
-
-    return buildAniWatchTVUrls(BASE_URL);
-  } catch (error) {
-    console.error("Error reaching AniWatch site:", error);
-    throw error;
-  }
+  return buildAniWatchTVUrls(BASE_URL);
 };
 
 export { BASE_URL };

@@ -10,6 +10,9 @@ config();
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 
+// Trust Railway/Vercel proxy so rate-limiter reads the real client IP
+app.set("trust proxy", 1);
+
 // Security headers
 app.use(helmet());
 
