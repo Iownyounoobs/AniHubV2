@@ -4,6 +4,7 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import Card from "../components/Card";
 
+const API_BASE = process.env.REACT_APP_API_URL || "";
 
 export default function OriginAnime() {
   const { country } = useParams();
