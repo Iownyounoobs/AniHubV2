@@ -17,9 +17,9 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 
 WORKDIR /app
 
-# Install all deps first (devDeps needed for TypeScript build)
+# Install all deps including devDeps needed for TypeScript/rimraf build
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Copy source and compile
 COPY . .
